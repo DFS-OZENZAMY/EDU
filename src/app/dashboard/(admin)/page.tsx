@@ -3,7 +3,7 @@ import { Users, GraduationCap, Calendar, BarChart3, TrendingUp, AlertTriangle } 
 
 const stats = [
   { name: "Total Élèves", value: "342", icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50" },
-  { name: "Enseignants", value: "28", icon: Users, icon2: Users, color: "text-green-600", bg: "bg-green-50" },
+  { name: "Enseignants", value: "28", icon: Users, color: "text-green-600", bg: "bg-green-50" },
   { name: "Taux de présence", value: "94.2%", icon: Calendar, color: "text-purple-600", bg: "bg-purple-50" },
   { name: "Retards paiement", value: "12", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
 ]

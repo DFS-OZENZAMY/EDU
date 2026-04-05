@@ -1,7 +1,21 @@
+"use client"
+import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Shield, Users, UserCircle } from "lucide-react"
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [role, setRole] = React.useState<"admin" | "teacher" | "parent">("admin")
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (role === "admin") router.push("/dashboard")
+    else if (role === "teacher") router.push("/dashboard/teacher")
+    else if (role === "parent") router.push("/dashboard/parent")
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -14,13 +28,41 @@ export default function LoginPage() {
             Connexion à votre espace
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{" "}
-            <Link href="/register" className="font-medium text-primary hover:text-blue-500">
-              créez un compte pour votre établissement
-            </Link>
+            Choisissez votre profil pour accéder à votre espace
           </p>
         </div>
-        <form className="mt-8 space-y-6" action="/dashboard" method="GET">
+
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <button
+            onClick={() => setRole("admin")}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+              role === "admin" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
+            }`}
+          >
+            <Shield className="h-6 w-6" />
+            <span className="text-xs font-bold uppercase">Admin</span>
+          </button>
+          <button
+            onClick={() => setRole("teacher")}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+              role === "teacher" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
+            }`}
+          >
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-bold uppercase">Prof</span>
+          </button>
+          <button
+            onClick={() => setRole("parent")}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+              role === "parent" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
+            }`}
+          >
+            <UserCircle className="h-6 w-6" />
+            <span className="text-xs font-bold uppercase">Parent</span>
+          </button>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="-space-y-px rounded-md shadow-sm">
             <div>
               <label htmlFor="email-address" className="sr-only text-gray-900">
@@ -30,6 +72,7 @@ export default function LoginPage() {
                 id="email-address"
                 name="email"
                 type="email"
+                required
                 className="relative block w-full rounded-t-md border-0 py-3 px-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 placeholder="votre@email.com"
               />
@@ -42,35 +85,16 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
+                required
                 className="relative block w-full rounded-b-md border-0 py-3 px-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Se souvenir de moi
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-primary hover:text-blue-500">
-                Mot de passe oublié ?
-              </a>
-            </div>
-          </div>
-
           <div>
             <Button type="submit" className="w-full py-6 text-lg font-bold">
-              Se connecter
+              Accéder à mon espace {role === "admin" ? "Directeur" : role === "teacher" ? "Enseignant" : "Parent"}
             </Button>
           </div>
         </form>
