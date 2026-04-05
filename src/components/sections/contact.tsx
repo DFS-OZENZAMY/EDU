@@ -15,11 +15,11 @@ export function Contact() {
               Remplissez ce formulaire et nous vous contactons sous 24h pour configurer votre accès gratuit.
             </p>
             <div className="mt-10 space-y-6">
-               <a href="mailto:contact@minassa.ma" className="flex items-center gap-4 text-gray-600 hover:text-primary transition-colors">
+               <a href="mailto:contact@edu.ma" className="flex items-center gap-4 text-gray-600 hover:text-primary transition-colors">
                   <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-gray-50">
                      <Mail className="h-5 w-5" />
                   </div>
-                  <span className="font-medium">contact@minassa.ma</span>
+                  <span className="font-medium">contact@edu.ma</span>
                </a>
                <div className="flex items-center gap-4 text-gray-600">
                   <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-gray-50">

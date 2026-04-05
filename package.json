@@ -1,7 +1,7 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "EDU Clone - Gestion Scolaire au Maroc",
+  "description": "EDU - Gestion Scolaire au Maroc",
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -10,22 +10,22 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.2",
     "clsx": "^2.1.1",
-    "framer-motion": "^11.15.0",
-    "lucide-react": "^0.468.0",
-    "next": "15.1.0",
+    "framer-motion": "^12.4.7",
+    "lucide-react": "^0.479.0",
+    "next": "15.1.11",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "tailwind-merge": "^2.5.5"
+    "tailwind-merge": "^3.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.17.10",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/node": "^20.17.19",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.16",
-    "typescript": "^5.7.2"
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2"
   }
 }
