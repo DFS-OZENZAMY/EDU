@@ -2,12 +2,31 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2 } from "lucide-react"
+import { getMyData } from "@/actions/data"
+import { clockIn } from "@/actions/teacher"
 
 export default function TeacherDashboardPage() {
   const [hasStartedDay, setHasStartedDay] = React.useState(false)
   const [startTime, setStartTime] = React.useState<string | null>(null)
+  const [classes, setClasses] = React.useState<any[]>([])
 
-  const handleStartDay = () => {
+  React.useEffect(() => {
+    getMyData().then((data: any) => {
+        if (Array.isArray(data)) {
+            setClasses(data)
+            // Check if already clocked in today
+            const teacher = data[0]?.teacher
+            if (teacher?.clockIns?.length > 0) {
+                const lastClock = new Date(teacher.clockIns[0].time)
+                setHasStartedDay(true)
+                setStartTime(lastClock.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
+            }
+        }
+    })
+  }, [])
+
+  const handleStartDay = async () => {
+    await clockIn()
     setHasStartedDay(true)
     setStartTime(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
   }
@@ -17,8 +36,8 @@ export default function TeacherDashboardPage() {
       {/* Overview Banner */}
       <div className="bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden relative">
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">Bonjour Prof. Ahmed !</h2>
-          <p className="text-green-100 max-w-md mb-4">Vous avez 4 classes prévues aujourd'hui. Votre prochain cours commence à 10:00.</p>
+          <h2 className="text-2xl font-bold mb-2">Bonjour Prof. {classes[0]?.teacher?.name || "Ahmed"} !</h2>
+          <p className="text-green-100 max-w-md mb-4">Vous avez {classes.length} classes prévues aujourd'hui. Votre prochain cours commence à 08:30.</p>
           {hasStartedDay ? (
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 text-sm font-medium">
                <CheckCircle2 className="h-4 w-4" />
@@ -46,26 +65,24 @@ export default function TeacherDashboardPage() {
                   Emploi du temps d'aujourd'hui
                </h3>
                <div className="space-y-4">
-                  {[
-                     { time: "08:30 - 10:00", class: "CP-A", subject: "Français", room: "Salle 12" },
-                     { time: "10:15 - 11:45", class: "CE1-B", subject: "Français", room: "Salle 05" },
-                     { time: "14:30 - 16:00", class: "CP-B", subject: "Français", room: "Salle 12" },
-                     { time: "16:15 - 17:45", class: "CE2-A", subject: "Soutien", room: "Labo 01" },
-                  ].map((lesson, i) => (
+                  {classes.map((lesson, i) => (
                      <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-hover hover:border-green-200 group">
                         <div className="w-32 flex flex-col items-center border-r border-slate-200">
                            <Clock className="h-4 w-4 text-slate-400 mb-1" />
-                           <span className="text-xs font-bold text-slate-700">{lesson.time}</span>
+                           <span className="text-xs font-bold text-slate-700">08:30 - 10:00</span>
                         </div>
                         <div className="flex-1">
-                           <p className="text-sm font-bold text-gray-900">{lesson.subject}</p>
-                           <p className="text-xs text-slate-500">{lesson.class} • {lesson.room}</p>
+                           <p className="text-sm font-bold text-gray-900">Français</p>
+                           <p className="text-xs text-slate-500">{lesson.name} • {lesson.room}</p>
                         </div>
                         <button className="opacity-0 group-hover:opacity-100 bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all">
                            Faire l'appel
                         </button>
                      </div>
                   ))}
+                  {classes.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4 italic">Aucune classe prévue aujourd'hui.</p>
+                  )}
                </div>
             </Card>
 

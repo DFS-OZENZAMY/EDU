@@ -3,7 +3,7 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Users, GraduationCap, Search, MoreHorizontal, Settings2, Trash2 } from "lucide-react"
-import { getTeacherClasses, getAdminUsers } from "@/actions/data"
+import { getAllClasses, getAdminUsers } from "@/actions/data"
 import { createClass } from "@/actions/admin"
 
 export default function ClassesPage() {
@@ -12,19 +12,12 @@ export default function ClassesPage() {
   const [showAddModal, setShowAddModal] = React.useState(false)
 
   React.useEffect(() => {
-    // For admin, we want all classes. Our getTeacherClasses(id) only gets for one teacher.
-    // Let's assume we fetch all for now or I should add a getAllClasses action.
-    // For the sake of this prototype, let's use a dummy teacher ID or fetch all.
     getAdminUsers().then(users => setTeachers(users.filter((u: any) => u.role === 'TEACHER')))
-
-    // I'll update getTeacherClasses to optionally take no ID to get all or create a new one.
-    // But since I'm restricted to tools, I'll just use the mock data as fallback if no real ones.
     fetchClasses()
   }, [])
 
   const fetchClasses = async () => {
-    // Mocking the "fetch all classes" since I didn't write it yet
-    const data = await getTeacherClasses(2) // Get for teacher 2 from seed
+    const data = await getAllClasses()
     setClasses(data)
   }
 
@@ -66,11 +59,11 @@ export default function ClassesPage() {
             <div className="space-y-3 pt-4 border-t border-gray-50">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Users className="h-4 w-4 text-gray-400" />
-                <span>{cls.studentsCount} élèves inscrits</span>
+                <span>{cls._count?.students || 0} élèves inscrits</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                <span>Titulaire: <span className="font-medium">{cls.teacher}</span></span>
+                <span>Titulaire: <span className="font-medium">{cls.teacher?.name || "N/A"}</span></span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
                 <Settings2 className="h-3 w-3" />
@@ -110,11 +103,11 @@ export default function ClassesPage() {
               {classes.map((cls) => (
                 <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 font-medium text-gray-900">{cls.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{cls.teacher}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{cls.teacher?.name || "N/A"}</td>
                   <td className="px-6 py-4">
                      <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium">{cls.level}</span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium">{cls.studentsCount} / 30</td>
+                  <td className="px-6 py-4 text-sm font-medium">{cls._count?.students || 0} / 30</td>
                   <td className="px-6 py-4">
                      <div className="flex gap-2">
                         <button className="p-1.5 text-gray-400 hover:text-primary transition-colors"><Settings2 className="h-4 w-4" /></button>

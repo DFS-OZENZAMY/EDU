@@ -3,7 +3,7 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Check, X, AlertCircle } from "lucide-react"
-import { getTeacherClasses } from "@/actions/data"
+import { getMyData } from "@/actions/data"
 import { takeAttendance } from "@/actions/teacher"
 
 export default function TeacherAttendancePage() {
@@ -12,12 +12,16 @@ export default function TeacherAttendancePage() {
   const [students, setStudents] = React.useState<any[]>([])
 
   React.useEffect(() => {
-    // In a real app, you'd get the teacher ID from the session
-    getTeacherClasses(2).then(data => {
-      setClasses(data)
-      if (data.length > 0) {
-        setCurrentClassId(data[0].id)
-        setStudents(data[0].students)
+    getMyData().then((data: any) => {
+      if (Array.isArray(data)) {
+        setClasses(data)
+        if (data.length > 0) {
+          setCurrentClassId(data[0].id)
+          setStudents(data[0].students.map((s: any) => ({
+             ...s,
+             attendanceStatus: s.attendance?.[0]?.status
+          })))
+        }
       }
     })
   }, [])

@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+
 const prisma = new PrismaClient()
 
 async function main() {
@@ -11,10 +13,12 @@ async function main() {
 
   console.log('Seeding data...')
 
+  const hashedPassword = await bcrypt.hash('password123', 10)
+
   const admin = await prisma.user.create({
     data: {
       email: 'admin@edu.ma',
-      password: 'password123',
+      password: hashedPassword,
       name: 'Admin EDU',
       role: 'ADMIN',
     },
@@ -23,7 +27,7 @@ async function main() {
   const teacher1 = await prisma.user.create({
     data: {
       email: 'ahmed@edu.ma',
-      password: 'password123',
+      password: hashedPassword,
       name: 'Ahmed Alaoui',
       role: 'TEACHER',
     },
@@ -32,7 +36,7 @@ async function main() {
   const teacher2 = await prisma.user.create({
     data: {
       email: 'salma@edu.ma',
-      password: 'password123',
+      password: hashedPassword,
       name: 'Salma Bennani',
       role: 'TEACHER',
     },
@@ -59,7 +63,7 @@ async function main() {
   const parent = await prisma.user.create({
     data: {
       email: 'parent@email.com',
-      password: 'password123',
+      password: hashedPassword,
       name: 'Mme Salma Bennani',
       role: 'PARENT',
     },
@@ -78,6 +82,16 @@ async function main() {
       name: 'Sara Alaoui',
       classId: classA.id,
     },
+  })
+
+  await prisma.fee.create({
+    data: {
+        parentId: parent.id,
+        month: 'Avril 2026',
+        amount: 2500,
+        status: 'PAID',
+        paidAt: new Date()
+    }
   })
 
   console.log('Seed completed successfully!')

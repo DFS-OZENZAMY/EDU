@@ -50,7 +50,7 @@ export default function UsersPage() {
             </div>
             <div>
                <p className="text-sm text-gray-500">Total Utilisateurs</p>
-               <p className="text-xl font-bold">154</p>
+               <p className="text-xl font-bold">{users.length}</p>
             </div>
          </Card>
          <Card className="p-4 flex items-center gap-4">
@@ -59,7 +59,7 @@ export default function UsersPage() {
             </div>
             <div>
                <p className="text-sm text-gray-500">Enseignants</p>
-               <p className="text-xl font-bold">28</p>
+               <p className="text-xl font-bold">{users.filter(u => u.role === 'TEACHER').length}</p>
             </div>
          </Card>
          <Card className="p-4 flex items-center gap-4">
@@ -68,7 +68,7 @@ export default function UsersPage() {
             </div>
             <div>
                <p className="text-sm text-gray-500">Parents</p>
-               <p className="text-xl font-bold">126</p>
+               <p className="text-xl font-bold">{users.filter(u => u.role === 'PARENT').length}</p>
             </div>
          </Card>
       </div>

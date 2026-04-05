@@ -2,15 +2,15 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle } from "lucide-react"
-import { getParentData } from "@/actions/data"
+import { getMyData } from "@/actions/data"
 
 export default function ParentDashboardPage() {
   const [data, setData] = React.useState<any[]>([])
 
   React.useEffect(() => {
-    // Parent ID from session in real app
-    // In our seed, parent is the 4th user created
-    getParentData(4).then(setData)
+    getMyData().then((res: any) => {
+        if (Array.isArray(res)) setData(res)
+    })
   }, [])
 
   const student = data[0]
@@ -20,8 +20,8 @@ export default function ParentDashboardPage() {
       {/* Overview Banner */}
       <div className="bg-blue-600 rounded-2xl p-8 text-white flex justify-between items-center overflow-hidden relative">
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">Bonjour {student?.parent?.name || "Mme Salma"} !</h2>
-          <p className="text-blue-100 max-w-md">Tout va bien pour {student?.name || "Youssef"} cette semaine. {student?.attendance?.length || 0} jours de présence enregistrés.</p>
+          <h2 className="text-2xl font-bold mb-2">Bonjour {student?.parent?.name || "Parent"} !</h2>
+          <p className="text-blue-100 max-w-md">Tout va bien pour {student?.name || "votre enfant"} cette semaine. {student?.attendance?.length || 0} jours de présence enregistrés.</p>
         </div>
         <Users className="h-32 w-32 text-white/10 absolute -right-4 -bottom-4 rotate-12" />
       </div>
@@ -34,11 +34,20 @@ export default function ParentDashboardPage() {
                      <div className="bg-green-50 text-green-600 p-2 rounded-lg">
                         <CheckCircle2 className="h-6 w-6" />
                      </div>
-                     <span className="text-[10px] font-bold text-green-600 uppercase">A jour</span>
+         <span className="text-[10px] font-bold text-green-600 uppercase">
+            {student?.parent?.fees?.[0]?.status === 'PAID' ? 'À jour' : 'En attente'}
+         </span>
                   </div>
                   <h4 className="font-bold text-gray-900">Paiement Scolarité</h4>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">Avril 2026</p>
-                  <p className="text-xs text-gray-500 mt-1">Payé le 02/04/2026</p>
+      <p className="text-2xl font-bold text-gray-900 mt-2">
+        {student?.parent?.fees?.[0]?.month || 'N/A'}
+      </p>
+      <p className="text-xs text-gray-500 mt-1">
+        {student?.parent?.fees?.[0]?.status === 'PAID'
+            ? `Payé le ${new Date(student?.parent?.fees?.[0]?.paidAt).toLocaleDateString()}`
+            : 'Non encore réglé'
+        }
+      </p>
                </Card>
                <Card className="p-6">
                   <div className="flex justify-between items-start mb-6">

@@ -2,6 +2,19 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { cookies } from "next/headers"
+
+export async function clockIn() {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get("userId")?.value
+  if (!userId) return { error: "Non authentifié" }
+
+  await prisma.clockIn.create({
+    data: { userId: parseInt(userId) }
+  })
+  revalidatePath("/dashboard/teacher")
+  return { success: true }
+}
 
 export async function takeAttendance(formData: FormData) {
   const studentId = parseInt(formData.get("studentId") as string)

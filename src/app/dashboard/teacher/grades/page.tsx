@@ -3,18 +3,26 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Save, Trash, Plus } from "lucide-react"
-
-const grades = [
-  { id: 1, name: "Youssef Bennani", note: "18.5", obs: "Très Bien" },
-  { id: 2, name: "Sara Mansouri", note: "16.0", obs: "Bien" },
-  { id: 3, name: "Karim El Amrani", note: "12.5", obs: "Moyen" },
-  { id: 4, name: "Sofia Tazi", note: "19.0", obs: "Excellent" },
-  { id: 5, name: "Anas Bennani", note: "14.5", obs: "Assez Bien" },
-]
+import { getMyData } from "@/actions/data"
+import { enterGrade } from "@/actions/teacher"
 
 export default function TeacherGradesPage() {
-  const [currentClass, setCurrentClass] = React.useState("CP-B")
+  const [classes, setClasses] = React.useState<any[]>([])
+  const [currentClassId, setCurrentClassId] = React.useState<number | null>(null)
+  const [students, setStudents] = React.useState<any[]>([])
   const [currentExam, setCurrentExam] = React.useState("Contrôle N°2")
+
+  React.useEffect(() => {
+    getMyData().then((data: any) => {
+        if (Array.isArray(data)) {
+            setClasses(data)
+            if (data.length > 0) {
+                setCurrentClassId(data[0].id)
+                setStudents(data[0].students)
+            }
+        }
+    })
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -25,12 +33,17 @@ export default function TeacherGradesPage() {
         </div>
         <div className="flex flex-wrap gap-3">
            <select
-             value={currentClass}
-             onChange={(e) => setCurrentClass(e.target.value)}
+             value={currentClassId || ""}
+             onChange={(e) => {
+                const id = parseInt(e.target.value)
+                setCurrentClassId(id)
+                setStudents(classes.find(c => c.id === id)?.students || [])
+             }}
              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-green-600/20"
            >
-              <option value="CP-B">CP - Section B</option>
-              <option value="CE1-A">CE1 - Section A</option>
+              {classes.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
            </select>
            <select
              value={currentExam}
@@ -72,26 +85,41 @@ export default function TeacherGradesPage() {
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                  {grades.map((student) => (
+                  {students.map((student) => (
                      <tr key={student.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
                         <td className="px-6 py-4">
                            <input
-                             type="text"
-                             defaultValue={student.note}
+                             type="number"
+                             defaultValue={student.grades?.[0]?.value || ""}
+                             id={`note-${student.id}`}
                              className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-center font-bold text-green-700 focus:ring-2 focus:ring-green-600/20"
                            />
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 italic">
                            <input
                              type="text"
-                             defaultValue={student.obs}
+                             defaultValue={student.grades?.[0]?.observation || ""}
+                             id={`obs-${student.id}`}
                              className="w-full px-3 py-1.5 border-0 bg-transparent rounded-lg focus:bg-white focus:ring-2 focus:ring-green-600/20"
                            />
                         </td>
                         <td className="px-6 py-4 text-right">
                            <div className="flex justify-end gap-2">
-                              <button className="p-2 text-slate-400 hover:text-green-600">
+                              <button
+                                onClick={async () => {
+                                    const note = (document.getElementById(`note-${student.id}`) as HTMLInputElement).value
+                                    const obs = (document.getElementById(`obs-${student.id}`) as HTMLInputElement).value
+                                    const fd = new FormData()
+                                    fd.append("studentId", student.id.toString())
+                                    fd.append("subject", "Général")
+                                    fd.append("value", note)
+                                    fd.append("observation", obs)
+                                    await enterGrade(fd)
+                                    alert("Note enregistrée")
+                                }}
+                                className="p-2 text-slate-400 hover:text-green-600"
+                              >
                                  <Save className="h-4 w-4" />
                               </button>
                               <button className="p-2 text-slate-400 hover:text-red-500">

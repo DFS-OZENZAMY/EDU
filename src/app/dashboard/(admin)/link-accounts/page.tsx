@@ -3,25 +3,35 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link as LinkIcon, UserPlus, Search, X, CheckCircle2, AlertCircle } from "lucide-react"
-
-const linkedAccounts = [
-  { id: 1, parent: "Salma Bennani", student: "Youssef Bennani", class: "CP-B", status: "Active" },
-  { id: 2, parent: "Driss Alaoui", student: "Sara Alaoui", class: "CE1-A", status: "Active" },
-  { id: 3, parent: "Khadija El Fassi", student: "Karim El Amrani", class: "CM1", status: "Pending" },
-]
+import { getAdminUsers, getAllStudents } from "@/actions/data"
+import { linkParentStudent } from "@/actions/admin"
 
 export default function LinkAccountsPage() {
+  const [parents, setParents] = React.useState<any[]>([])
+  const [students, setStudents] = React.useState<any[]>([])
   const [activeTab, setActiveTab] = React.useState<"parent" | "teacher">("parent")
   const [parentSearch, setParentSearch] = React.useState("")
   const [studentSearch, setStudentSearch] = React.useState("")
   const [isLinking, setIsLinking] = React.useState(false)
+  const [links, setLinks] = React.useState<any[]>([])
 
-  const handleLink = () => {
+  React.useEffect(() => {
+    getAdminUsers().then(data => setParents(data.filter(u => u.role === 'PARENT')))
+    getAllStudents().then(data => {
+        setStudents(data)
+        setLinks(data.filter(s => s.parentId !== null))
+    })
+  }, [])
+
+  const handleLink = async () => {
     setIsLinking(true)
-    setTimeout(() => {
-      setIsLinking(false)
-      alert("Lien créé avec succès !")
-    }, 1000)
+    const formData = new FormData()
+    // Using IDs from the searches (assuming search input is ID for prototype)
+    formData.append("parentId", parentSearch)
+    formData.append("studentId", studentSearch)
+    await linkParentStudent(formData)
+    setIsLinking(false)
+    alert("Lien créé avec succès !")
   }
 
   return (
@@ -132,34 +142,27 @@ export default function LinkAccountsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {linkedAccounts.map((link) => (
-                  <tr key={link.id} className="hover:bg-gray-50 transition-colors">
+                {links.map((student) => (
+                  <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                       <span className="font-medium text-gray-900">{link.parent}</span>
+                       <span className="font-medium text-gray-900">{student.parent?.name || "Parent"}</span>
                     </td>
                     <td className="px-6 py-4">
                        <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          <span className="text-gray-700">{link.student}</span>
+                          <span className="text-gray-700">{student.name}</span>
                        </div>
                     </td>
                     <td className="px-6 py-4">
                        <span className="text-xs font-medium px-2 py-1 rounded bg-blue-50 text-blue-700">
-                          {link.class}
+                          {student.class?.name || "N/A"}
                        </span>
                     </td>
                     <td className="px-6 py-4">
-                       {link.status === 'Active' ? (
-                         <span className="text-xs text-green-600 flex items-center gap-1 font-medium">
-                            <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                            Actif
-                         </span>
-                       ) : (
-                         <span className="text-xs text-orange-600 flex items-center gap-1 font-medium">
-                            <AlertCircle className="h-3 w-3" />
-                            En attente
-                         </span>
-                       )}
+                       <span className="text-xs text-green-600 flex items-center gap-1 font-medium">
+                          <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
+                          Actif
+                       </span>
                     </td>
                     <td className="px-6 py-4">
                        <button className="text-gray-400 hover:text-red-500 transition-colors">

@@ -20,6 +20,25 @@ model User {
   parentStudents Student[] @relation("ParentToStudent")
   messagesSent   Message[] @relation("SentMessages")
   messagesReceived Message[] @relation("ReceivedMessages")
+  clockIns       ClockIn[]
+  fees           Fee[]
+}
+
+model ClockIn {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  time      DateTime @default(now())
+}
+
+model Fee {
+  id        Int      @id @default(autoincrement())
+  parentId  Int
+  parent    User     @relation(fields: [parentId], references: [id])
+  month     String
+  amount    Float
+  status    String   // "PAID", "PENDING"
+  paidAt    DateTime?
 }
 
 model Student {
