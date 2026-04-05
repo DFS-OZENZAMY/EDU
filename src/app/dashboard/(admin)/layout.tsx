@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 import { logout } from "@/actions/auth"
 
 const sidebarNavigation = [
-  { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Tableau de bord", href: "/dashboard/overview", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/dashboard/users", icon: Users },
   { name: "Liaisons", href: "/dashboard/link-accounts", icon: GraduationCap },
   { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar },

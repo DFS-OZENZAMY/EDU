@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   }
 
   if (user.role === "ADMIN") {
-    redirect("/dashboard/users")
+    redirect("/dashboard/overview")
   }
 
   if (user.role === "TEACHER") {
