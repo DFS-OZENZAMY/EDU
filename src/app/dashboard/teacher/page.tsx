@@ -1,13 +1,40 @@
+"use client"
+import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, CheckSquare, BarChart3, Clock, Calendar } from "lucide-react"
+import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2 } from "lucide-react"
 
 export default function TeacherDashboardPage() {
+  const [hasStartedDay, setHasStartedDay] = React.useState(false)
+  const [startTime, setStartTime] = React.useState<string | null>(null)
+
+  const handleStartDay = () => {
+    setHasStartedDay(true)
+    setStartTime(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
+  }
+
   return (
     <div className="space-y-8">
       {/* Overview Banner */}
-      <div className="bg-green-600 rounded-2xl p-8 text-white">
-        <h2 className="text-2xl font-bold mb-2">Bonjour Prof. Ahmed !</h2>
-        <p className="text-green-100 max-w-md">Vous avez 4 classes prévues aujourd'hui. Votre prochain cours commence à 10:00.</p>
+      <div className="bg-green-600 rounded-2xl p-8 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden relative">
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold mb-2">Bonjour Prof. Ahmed !</h2>
+          <p className="text-green-100 max-w-md mb-4">Vous avez 4 classes prévues aujourd'hui. Votre prochain cours commence à 10:00.</p>
+          {hasStartedDay ? (
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 text-sm font-medium">
+               <CheckCircle2 className="h-4 w-4" />
+               Journée démarrée à {startTime}
+            </div>
+          ) : (
+            <button
+              onClick={handleStartDay}
+              className="group flex items-center gap-2 bg-white text-green-700 px-6 py-2.5 rounded-xl font-bold hover:bg-green-50 transition-all shadow-lg active:scale-95"
+            >
+               <PlayCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
+               Démarrer ma journée
+            </button>
+          )}
+        </div>
+        <Clock className="absolute -right-8 -top-8 h-48 w-48 text-white/10 -rotate-12 pointer-events-none" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

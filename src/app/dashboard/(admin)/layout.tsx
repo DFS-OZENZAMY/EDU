@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 const sidebarNavigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/dashboard/users", icon: Users },
+  { name: "Liaisons", href: "/dashboard/link-accounts", icon: GraduationCap },
   { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar },
   { name: "Élèves", href: "/dashboard/students", icon: GraduationCap },
   { name: "Classes", href: "/dashboard/classes", icon: Users },
