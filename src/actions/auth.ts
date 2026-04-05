@@ -40,6 +40,38 @@ export async function logout() {
   redirect("/login")
 }
 
+export async function register(formData: FormData) {
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  const name = formData.get("name") as string
+  const role = "ADMIN" // Default role for registration
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  })
+
+  if (existingUser) {
+    return { error: "Cet email est déjà utilisé" }
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      name,
+      role,
+    },
+  })
+
+  const cookieStore = await cookies()
+  cookieStore.set("userId", user.id.toString(), { path: "/", httpOnly: true, secure: true })
+  cookieStore.set("userRole", user.role, { path: "/", httpOnly: true, secure: true })
+
+  redirect("/dashboard/overview")
+}
+
 export async function getSession() {
   const cookieStore = await cookies()
   const userId = cookieStore.get("userId")?.value

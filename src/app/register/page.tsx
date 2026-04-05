@@ -1,7 +1,28 @@
+"use client"
+import * as React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { register } from "@/actions/auth"
 
 export default function RegisterPage() {
+  const [error, setError] = React.useState<string | null>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+    const formData = new FormData(e.currentTarget)
+    try {
+      const result = await register(formData)
+      if (result?.error) setError(result.error)
+    } catch (err) {
+      setError("Une erreur est survenue lors de l'inscription")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -13,6 +34,11 @@ export default function RegisterPage() {
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Créez votre compte EDU
           </h2>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm font-medium border border-red-100 mt-4">
+                {error}
+            </div>
+          )}
           <p className="mt-2 text-center text-sm text-gray-600">
             Vous avez déjà un compte ?{" "}
             <Link href="/login" className="font-medium text-primary hover:text-blue-500">
@@ -20,7 +46,7 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-4" action="/dashboard" method="GET">
+        <form className="mt-8 space-y-4" onSubmit={handleRegister}>
           <div className="space-y-4">
             <div>
               <label htmlFor="school-name" className="block text-sm font-medium leading-6 text-gray-900">
@@ -103,8 +129,8 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full py-6 text-lg font-bold">
-              Commencer les 6 mois gratuits
+            <Button type="submit" className="w-full py-6 text-lg font-bold" disabled={isLoading}>
+              {isLoading ? "Création en cours..." : "Commencer les 6 mois gratuits"}
             </Button>
           </div>
         </form>
