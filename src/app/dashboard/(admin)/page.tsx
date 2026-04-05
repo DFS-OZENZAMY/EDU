@@ -1,14 +1,36 @@
+"use client"
+import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Users, GraduationCap, Calendar, BarChart3, TrendingUp, AlertTriangle } from "lucide-react"
-
-const stats = [
-  { name: "Total Élèves", value: "342", icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50" },
-  { name: "Enseignants", value: "28", icon: Users, color: "text-green-600", bg: "bg-green-50" },
-  { name: "Taux de présence", value: "94.2%", icon: Calendar, color: "text-purple-600", bg: "bg-purple-50" },
-  { name: "Retards paiement", value: "12", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
-]
+import { getAdminUsers, getAllStudents, getAllClasses } from "@/actions/data"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function DashboardPage() {
+  const [users, setUsers] = React.useState<any[]>([])
+  const [students, setStudents] = React.useState<any[]>([])
+  const [classes, setClasses] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getAdminUsers().then(setUsers)
+    getAllStudents().then(setStudents)
+    getAllClasses().then(setClasses)
+  }, [])
+
+  const stats = [
+    { name: "Total Élèves", value: students.length.toString(), icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50" },
+    { name: "Enseignants", value: users.filter(u => u.role === 'TEACHER').length.toString(), icon: Users, color: "text-green-600", bg: "bg-green-50" },
+    { name: "Classes", value: classes.length.toString(), icon: Calendar, color: "text-purple-600", bg: "bg-purple-50" },
+    { name: "Parents", value: users.filter(u => u.role === 'PARENT').length.toString(), icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
+  ]
+
+  const data = [
+    { name: 'Lun', value: 4000 },
+    { name: 'Mar', value: 3000 },
+    { name: 'Mer', value: 2000 },
+    { name: 'Jeu', value: 2780 },
+    { name: 'Ven', value: 1890 },
+    { name: 'Sam', value: 2390 },
+  ];
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -52,16 +74,36 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
          {/* Main Chart Placeholder */}
-         <Card className="lg:col-span-2 p-6 flex flex-col">
+         <Card className="lg:col-span-2 p-6 flex flex-col min-h-[400px]">
             <div className="flex justify-between items-center mb-6">
-               <h3 className="font-bold text-gray-900 text-lg">Suivi des paiements</h3>
+               <h3 className="font-bold text-gray-900 text-lg">Suivi des présences / paiements</h3>
                <select className="text-sm border-0 bg-gray-50 rounded-lg px-2 py-1 font-medium focus:ring-0">
                   <option>7 derniers jours</option>
                   <option>30 derniers jours</option>
                </select>
             </div>
-            <div className="flex-1 bg-slate-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center">
-                <p className="text-gray-400 font-medium italic">Graphique analytique en attente de données</p>
+            <div className="flex-1 w-full h-full min-h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis
+                            dataKey="name"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{fill: '#94a3b8', fontSize: 12}}
+                            dy={10}
+                        />
+                        <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{fill: '#94a3b8', fontSize: 12}}
+                        />
+                        <Tooltip
+                            contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                        />
+                        <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={40} />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
          </Card>
 

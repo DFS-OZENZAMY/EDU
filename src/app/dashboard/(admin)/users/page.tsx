@@ -163,7 +163,7 @@ export default function UsersPage() {
                        </div>
                        <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                          <input type="password" value="********" readOnly className="w-full px-4 py-2 rounded-lg border border-gray-200 bg-gray-50" />
+                          <input name="password" required type="password" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="********" />
                        </div>
                     </div>
                  </div>

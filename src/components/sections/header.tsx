@@ -1,9 +1,10 @@
 "use client"
 import * as React from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LayoutDashboard, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { getSession, logout } from "@/actions/auth"
 
 const navigation = [
   { name: "Avantages", href: "/#avantages" },
@@ -15,6 +16,11 @@ const navigation = [
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getSession().then(setUser)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
@@ -43,12 +49,29 @@ export function Header() {
           ))}
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/login">Connexion</Link>
-          </Button>
-          <Button variant="primary" size="sm" asChild>
-            <Link href="/register">S'inscrire</Link>
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Tableau de bord
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => logout()} className="text-red-600 hover:text-red-700">
+                <LogOut className="h-4 w-4 mr-2" />
+                Déconnexion
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">Connexion</Link>
+              </Button>
+              <Button variant="primary" size="sm" asChild>
+                <Link href="/register">S'inscrire</Link>
+              </Button>
+            </>
+          )}
         </div>
       </nav>
       {/* Mobile menu */}
@@ -65,12 +88,25 @@ export function Header() {
             </Link>
           ))}
           <div className="pt-4 flex flex-col gap-2">
-            <Button variant="ghost" className="w-full" asChild onClick={() => setIsOpen(false)}>
-              <Link href="/login">Connexion</Link>
-            </Button>
-            <Button variant="primary" className="w-full" asChild onClick={() => setIsOpen(false)}>
-              <Link href="/register">S'inscrire</Link>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" className="w-full justify-start" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/dashboard">Tableau de bord</Link>
+                </Button>
+                <Button variant="outline" className="w-full justify-start text-red-600" onClick={() => logout()}>
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" className="w-full" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/login">Connexion</Link>
+                </Button>
+                <Button variant="primary" className="w-full" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/register">S'inscrire</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
   Bell
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { logout } from "@/actions/auth"
 
 const sidebarNavigation = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
@@ -64,13 +65,13 @@ export default function DashboardLayout({
             ))}
           </nav>
           <div className="p-4 border-t border-gray-200">
-            <Link
-              href="/"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50"
+            <button
+              onClick={() => logout()}
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50"
             >
               <LogOut className="h-5 w-5" />
               Déconnexion
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
