@@ -16,11 +16,11 @@ export function Hero() {
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600">
             Arrêtez de courir après les paiements en retard. Arrêtez de refaire les mêmes tableaux chaque semaine.
-            Minassa s'occupe de tout ça — déployé en 48h, sans engagement.
+            EDU s'occupe de tout ça — déployé en 48h, sans engagement.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <Button size="lg" asChild>
-              <a href="#contact">Voir Minassa en action →</a>
+              <a href="#contact">Voir EDU en action →</a>
             </Button>
             <Button variant="ghost" size="lg" className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">

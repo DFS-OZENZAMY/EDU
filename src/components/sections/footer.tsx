@@ -7,8 +7,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 lg:col-span-1">
             <div className="flex items-center gap-2 mb-6">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">M</div>
-              <span className="text-xl font-bold">Minassa</span>
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">E</div>
+              <span className="text-xl font-bold">EDU</span>
             </div>
             <p className="text-gray-400 leading-relaxed max-w-xs">
               Des solutions logicielles intelligentes pour les écoles modernes au Maroc. Simplifiez la gestion, améliorez la communication.
@@ -38,14 +38,14 @@ export function Footer() {
           <div>
             <h4 className="font-bold mb-6 text-lg">Contact</h4>
             <ul className="space-y-4 text-gray-400">
-              <li><a href="mailto:contact@minassa.ma" className="hover:text-primary transition-colors">contact@minassa.ma</a></li>
-              <li><a href="https://minassa.ma" className="hover:text-primary transition-colors">minassa.ma</a></li>
+              <li><a href="mailto:contact@edu.ma" className="hover:text-primary transition-colors">contact@edu.ma</a></li>
+              <li><a href="https://edu.ma" className="hover:text-primary transition-colors">edu.ma</a></li>
               <li><a href="#contact" className="hover:text-primary transition-colors">Formulaire de contact</a></li>
             </ul>
           </div>
         </div>
         <div className="pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
-          <p>© {currentYear} Minassa. Tous droits réservés.</p>
+          <p>© {currentYear} EDU. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

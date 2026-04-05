@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Minassa - Logiciel de gestion scolaire au Maroc",
+  title: "EDU - Logiciel de gestion scolaire au Maroc",
   description: "La solution complète pour la gestion de votre école au Maroc. Inscriptions, notes, absences, paiements et communication.",
 };
 

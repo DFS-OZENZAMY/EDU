@@ -1,44 +1,31 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "EDU Clone - Gestion Scolaire au Maroc",
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "next lint"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DFS-OZENZAMY/EDU.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/DFS-OZENZAMY/EDU/issues"
-  },
-  "homepage": "https://github.com/DFS-OZENZAMY/EDU#readme",
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-slot": "^1.1.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.0.0",
-    "lucide-react": "^0.479.0",
-    "next": "16.2.2",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.468.0",
+    "next": "15.1.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^20.17.10",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2"
   }
 }

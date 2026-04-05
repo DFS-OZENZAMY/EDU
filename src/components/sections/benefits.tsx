@@ -3,12 +3,12 @@ import { Users, FileText, Smartphone, MessageSquare } from "lucide-react"
 const benefits = [
   {
     title: "La fin du chaos administratif",
-    description: "Vous passez encore des heures à chercher un dossier d'élève, à corriger un tableau Excel ou à relancer manuellement des parents pour des paiements en retard. Avec Minassa, tout est centralisé. Vous trouvez tout en 10 secondes.",
+    description: "Vous passez encore des heures à chercher un dossier d'élève, à corriger un tableau Excel ou à relancer manuellement des parents pour des paiements en retard. Avec EDU, tout est centralisé. Vous trouvez tout en 10 secondes.",
     icon: FileText
   },
   {
     title: "Moins de paperasse, plus d'enseignement",
-    description: "Vos enseignants perdent un temps précieux à remplir des registres et des cahiers de texte. Minassa leur donne un outil simple, accessible depuis leur téléphone, pour saisir les notes et les absences en quelques clics.",
+    description: "Vos enseignants perdent un temps précieux à remplir des registres et des cahiers de texte. EDU leur donne un outil simple, accessible depuis leur téléphone, pour saisir les notes et les absences en quelques clics.",
     icon: Users
   },
   {
@@ -27,12 +27,12 @@ export function Benefits() {
   return (
     <section id="avantages" className="py-24 bg-gray-50">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center mb-16">
-        <h2 className="text-primary font-semibold tracking-wide uppercase">Pourquoi Minassa</h2>
+        <h2 className="text-primary font-semibold tracking-wide uppercase">Pourquoi EDU</h2>
         <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           Reconnaissez-vous votre école ici ?
         </p>
         <p className="mt-4 text-lg text-gray-600">
-          Ces problèmes du quotidien ont une solution. Elle s'appelle Minassa.
+          Ces problèmes du quotidien ont une solution. Elle s'appelle EDU.
         </p>
       </div>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">

@@ -43,7 +43,7 @@ export function Modules() {
             Des modules puissants pour chaque besoin de votre école
           </p>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            De la gestion des élèves à la comptabilité, Minassa couvre l'intégralité des besoins de votre établissement dans une seule plateforme centralisée.
+            De la gestion des élèves à la comptabilité, EDU couvre l'intégralité des besoins de votre établissement dans une seule plateforme centralisée.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

@@ -20,8 +20,8 @@ export function Header() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">M</div>
-            <span className="text-xl font-bold text-gray-900">Minassa</span>
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">E</div>
+            <span className="text-xl font-bold text-gray-900">EDU</span>
           </a>
         </div>
         <div className="flex lg:hidden">
