@@ -3,17 +3,34 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Search, Check, X, AlertCircle } from "lucide-react"
-
-const students = [
-  { id: 1, name: "Youssef Bennani", attendance: "P" },
-  { id: 2, name: "Sara Mansouri", attendance: "P" },
-  { id: 3, name: "Karim El Amrani", attendance: "A" },
-  { id: 4, name: "Sofia Tazi", attendance: "L" },
-  { id: 5, name: "Anas Bennani", attendance: "P" },
-]
+import { getTeacherClasses } from "@/actions/data"
+import { takeAttendance } from "@/actions/teacher"
 
 export default function TeacherAttendancePage() {
-  const [currentClass, setCurrentClass] = React.useState("CP-B")
+  const [classes, setClasses] = React.useState<any[]>([])
+  const [currentClassId, setCurrentClassId] = React.useState<number | null>(null)
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    // In a real app, you'd get the teacher ID from the session
+    getTeacherClasses(2).then(data => {
+      setClasses(data)
+      if (data.length > 0) {
+        setCurrentClassId(data[0].id)
+        setStudents(data[0].students)
+      }
+    })
+  }, [])
+
+  const handleAttendance = async (studentId: number, status: string) => {
+    const formData = new FormData()
+    formData.append("studentId", studentId.toString())
+    formData.append("status", status)
+    await takeAttendance(formData)
+
+    // Update local state for feedback
+    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, attendanceStatus: status } : s))
+  }
 
   return (
     <div className="space-y-6">
@@ -24,12 +41,18 @@ export default function TeacherAttendancePage() {
         </div>
         <div className="flex items-center gap-3">
            <select
-             value={currentClass}
-             onChange={(e) => setCurrentClass(e.target.value)}
+             value={currentClassId || ""}
+             onChange={(e) => {
+                const id = parseInt(e.target.value)
+                setCurrentClassId(id)
+                const cls = classes.find(c => c.id === id)
+                setStudents(cls?.students || [])
+             }}
              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-green-600/20"
            >
-              <option value="CP-B">CP - Section B</option>
-              <option value="CE1-A">CE1 - Section A</option>
+              {classes.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
            </select>
            <Button className="bg-green-600 hover:bg-green-700">Enregistrer l'appel</Button>
         </div>
@@ -79,19 +102,28 @@ export default function TeacherAttendancePage() {
                      <tr key={student.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
                         <td className="px-6 py-4">
-                           {student.attendance === 'P' && <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Présent</span>}
-                           {student.attendance === 'A' && <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">Absent</span>}
-                           {student.attendance === 'L' && <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full">En retard</span>}
+                           {student.attendanceStatus === 'PRESENT' && <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Présent</span>}
+                           {student.attendanceStatus === 'ABSENT' && <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">Absent</span>}
+                           {student.attendanceStatus === 'LATE' && <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full">En retard</span>}
                         </td>
                         <td className="px-6 py-4">
                            <div className="flex justify-center gap-2">
-                              <button className={`p-2 rounded-lg border ${student.attendance === 'P' ? 'bg-green-600 text-white border-green-600' : 'text-gray-400 border-gray-200 hover:border-green-600 hover:text-green-600'}`}>
+                              <button
+                                onClick={() => handleAttendance(student.id, 'PRESENT')}
+                                className={`p-2 rounded-lg border ${student.attendanceStatus === 'PRESENT' ? 'bg-green-600 text-white border-green-600' : 'text-gray-400 border-gray-200 hover:border-green-600 hover:text-green-600'}`}
+                              >
                                  <Check className="h-4 w-4" />
                               </button>
-                              <button className={`p-2 rounded-lg border ${student.attendance === 'L' ? 'bg-orange-500 text-white border-orange-500' : 'text-gray-400 border-gray-200 hover:border-orange-500 hover:text-orange-500'}`}>
+                              <button
+                                onClick={() => handleAttendance(student.id, 'LATE')}
+                                className={`p-2 rounded-lg border ${student.attendanceStatus === 'LATE' ? 'bg-orange-500 text-white border-orange-500' : 'text-gray-400 border-gray-200 hover:border-orange-500 hover:text-orange-500'}`}
+                              >
                                  <AlertCircle className="h-4 w-4" />
                               </button>
-                              <button className={`p-2 rounded-lg border ${student.attendance === 'A' ? 'bg-red-500 text-white border-red-500' : 'text-gray-400 border-gray-200 hover:border-red-500 hover:text-red-500'}`}>
+                              <button
+                                onClick={() => handleAttendance(student.id, 'ABSENT')}
+                                className={`p-2 rounded-lg border ${student.attendanceStatus === 'ABSENT' ? 'bg-red-500 text-white border-red-500' : 'text-gray-400 border-gray-200 hover:border-red-500 hover:text-red-500'}`}
+                              >
                                  <X className="h-4 w-4" />
                               </button>
                            </div>

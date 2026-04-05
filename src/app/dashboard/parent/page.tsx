@@ -1,14 +1,27 @@
+"use client"
+import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle } from "lucide-react"
+import { getParentData } from "@/actions/data"
 
 export default function ParentDashboardPage() {
+  const [data, setData] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    // Parent ID from session in real app
+    // In our seed, parent is the 4th user created
+    getParentData(4).then(setData)
+  }, [])
+
+  const student = data[0]
+
   return (
     <div className="space-y-8">
       {/* Overview Banner */}
       <div className="bg-blue-600 rounded-2xl p-8 text-white flex justify-between items-center overflow-hidden relative">
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">Bonjour Mme Salma !</h2>
-          <p className="text-blue-100 max-w-md">Tout va bien pour Youssef cette semaine. 100% de présence enregistrée.</p>
+          <h2 className="text-2xl font-bold mb-2">Bonjour {student?.parent?.name || "Mme Salma"} !</h2>
+          <p className="text-blue-100 max-w-md">Tout va bien pour {student?.name || "Youssef"} cette semaine. {student?.attendance?.length || 0} jours de présence enregistrés.</p>
         </div>
         <Users className="h-32 w-32 text-white/10 absolute -right-4 -bottom-4 rotate-12" />
       </div>
@@ -44,23 +57,21 @@ export default function ParentDashboardPage() {
             <Card className="p-6">
                <h3 className="font-bold text-gray-900 text-lg mb-6">Derniers Résultats</h3>
                <div className="space-y-4">
-                  {[
-                     { subject: "Mathématiques", title: "Contrôle N°2", grade: "18.5/20", date: "Hier", status: "Très Bien" },
-                     { subject: "Français", title: "Dictée", grade: "16/20", date: "12 Avril", status: "Bien" },
-                     { subject: "Arabe", title: "Expression Orale", grade: "19/20", date: "10 Avril", status: "Excellent" },
-                  ].map((item, i) => (
+                  {student?.grades?.length > 0 ? student.grades.map((item: any, i: number) => (
                      <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-slate-50 transition-colors">
                         <div>
                            <p className="text-xs font-bold text-blue-600 uppercase tracking-tight">{item.subject}</p>
-                           <p className="text-sm font-bold text-gray-900">{item.title}</p>
-                           <p className="text-[10px] text-gray-500">{item.date}</p>
+                           <p className="text-sm font-bold text-gray-900">Note d'évaluation</p>
+                           <p className="text-[10px] text-gray-500">{new Date(item.date).toLocaleDateString()}</p>
                         </div>
                         <div className="text-right">
-                           <p className="text-lg font-bold text-gray-900">{item.grade}</p>
-                           <p className="text-[10px] font-bold text-green-600 italic">{item.status}</p>
+                           <p className="text-lg font-bold text-gray-900">{item.value}/20</p>
+                           <p className="text-[10px] font-bold text-green-600 italic">{item.observation}</p>
                         </div>
                      </div>
-                  ))}
+                  )) : (
+                     <p className="text-sm text-gray-500 italic text-center py-4">Aucune note enregistrée pour le moment.</p>
+                  )}
                </div>
             </Card>
          </div>

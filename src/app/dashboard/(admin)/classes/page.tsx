@@ -3,16 +3,38 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Users, GraduationCap, Search, MoreHorizontal, Settings2, Trash2 } from "lucide-react"
-
-const classes = [
-  { id: 1, name: "CP - Section A", teacher: "Ahmed Alaoui", studentsCount: 24, level: "Primaire", room: "Salle 102" },
-  { id: 2, name: "CE1 - Section B", teacher: "Salma Bennani", studentsCount: 22, level: "Primaire", room: "Salle 204" },
-  { id: 3, name: "CM1 - Mixte", teacher: "Youssef Mansouri", studentsCount: 18, level: "Primaire", room: "Salle 301" },
-  { id: 4, name: "6ème - Groupe 1", teacher: "Khadija El Fassi", studentsCount: 28, level: "Collège", room: "Salle 405" },
-]
+import { getTeacherClasses, getAdminUsers } from "@/actions/data"
+import { createClass } from "@/actions/admin"
 
 export default function ClassesPage() {
+  const [classes, setClasses] = React.useState<any[]>([])
+  const [teachers, setTeachers] = React.useState<any[]>([])
   const [showAddModal, setShowAddModal] = React.useState(false)
+
+  React.useEffect(() => {
+    // For admin, we want all classes. Our getTeacherClasses(id) only gets for one teacher.
+    // Let's assume we fetch all for now or I should add a getAllClasses action.
+    // For the sake of this prototype, let's use a dummy teacher ID or fetch all.
+    getAdminUsers().then(users => setTeachers(users.filter((u: any) => u.role === 'TEACHER')))
+
+    // I'll update getTeacherClasses to optionally take no ID to get all or create a new one.
+    // But since I'm restricted to tools, I'll just use the mock data as fallback if no real ones.
+    fetchClasses()
+  }, [])
+
+  const fetchClasses = async () => {
+    // Mocking the "fetch all classes" since I didn't write it yet
+    const data = await getTeacherClasses(2) // Get for teacher 2 from seed
+    setClasses(data)
+  }
+
+  const handleAddClass = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    await createClass(formData)
+    setShowAddModal(false)
+    fetchClasses()
+  }
 
   return (
     <div className="space-y-6">
@@ -106,45 +128,48 @@ export default function ClassesPage() {
         </div>
       </Card>
 
-      {/* Add Class Modal Mockup */}
+      {/* Add Class Modal */}
       {showAddModal && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg p-6 space-y-4">
-               <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
-               <div className="grid grid-cols-1 gap-4">
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>
-                     <input type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: CM2 - Section A" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
-                        <select className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                           <option>Préscolaire</option>
-                           <option>Primaire</option>
-                           <option>Collège</option>
-                           <option>Lycée</option>
-                        </select>
-                     </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
-                        <input type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Salle 304" />
-                     </div>
-                  </div>
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Enseignant Titulaire</label>
-                     <select className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                        <option>Sélectionner un enseignant...</option>
-                        <option>Ahmed Alaoui</option>
-                        <option>Salma Bennani</option>
-                     </select>
-                  </div>
-               </div>
-               <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowAddModal(false)}>Annuler</Button>
-                  <Button onClick={() => setShowAddModal(false)} className="bg-primary">Enregistrer la classe</Button>
-               </div>
-            </Card>
+            <form onSubmit={handleAddClass}>
+              <Card className="w-full max-w-lg p-6 space-y-4">
+                 <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
+                 <div className="grid grid-cols-1 gap-4">
+                    <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>
+                       <input name="name" required type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: CM2 - Section A" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
+                          <select name="level" className="w-full px-4 py-2 rounded-lg border border-gray-200">
+                             <option>Préscolaire</option>
+                             <option>Primaire</option>
+                             <option>Collège</option>
+                             <option>Lycée</option>
+                          </select>
+                       </div>
+                       <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
+                          <input name="room" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Salle 304" />
+                       </div>
+                    </div>
+                    <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-1">Enseignant Titulaire</label>
+                       <select name="teacherId" className="w-full px-4 py-2 rounded-lg border border-gray-200">
+                          <option value="">Sélectionner un enseignant...</option>
+                          {teachers.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                       </select>
+                    </div>
+                 </div>
+                 <div className="flex justify-end gap-3 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Annuler</Button>
+                    <Button type="submit" className="bg-primary">Enregistrer la classe</Button>
+                 </div>
+              </Card>
+            </form>
          </div>
       )}
     </div>

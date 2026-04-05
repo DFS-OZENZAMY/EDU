@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   // "ADMIN", "TEACHER", "PARENT"
+  createdAt DateTime @default(now())
+
+  // Specific relations
+  teacherClasses Class[]  @relation("TeacherToClass")
+  parentStudents Student[] @relation("ParentToStudent")
+  messagesSent   Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  name      String
+  classId   Int
+  class     Class    @relation(fields: [classId], references: [id])
+  parentId  Int?
+  parent    User?    @relation("ParentToStudent", fields: [parentId], references: [id])
+  grades    Grade[]
+  attendance Attendance[]
+}
+
+model Class {
+  id        Int      @id @default(autoincrement())
+  name      String
+  level     String
+  room      String?
+  teacherId Int?
+  teacher   User?    @relation("TeacherToClass", fields: [teacherId], references: [id])
+  students  Student[]
+}
+
+model Grade {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  subject   String
+  value     Float
+  observation String?
+  date      DateTime @default(now())
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  status    String   // "PRESENT", "LATE", "ABSENT"
+  date      DateTime @default(now())
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  senderId  Int
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId Int
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  createdAt DateTime @default(now())
+}

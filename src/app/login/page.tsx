@@ -1,104 +1,113 @@
 "use client"
 import * as React from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Shield, Users, UserCircle } from "lucide-react"
+import { GraduationCap, Mail, Lock, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [role, setRole] = React.useState<"admin" | "teacher" | "parent">("admin")
+  const [role, setRole] = React.useState<"ADMIN" | "TEACHER" | "PARENT">("ADMIN")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [error, setError] = React.useState<string | null>(null)
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (role === "admin") router.push("/dashboard")
-    else if (role === "teacher") router.push("/dashboard/teacher")
-    else if (role === "parent") router.push("/dashboard/parent")
+    setIsLoading(true)
+    setError(null)
+
+    const formData = new FormData()
+    formData.append("email", email)
+    formData.append("password", password)
+    formData.append("role", role)
+
+    try {
+      // In a real Server Action, you'd import and call it directly.
+      // But we can also use a dynamic import or fetch for demonstration.
+      const { login } = await import("@/actions/auth")
+      const result = await login(formData)
+      if (result?.error) setError(result.error)
+    } catch (err) {
+      setError("Une erreur est survenue")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <Link href="/" className="flex justify-center items-center gap-2 mb-6">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-2xl">E</div>
-            <span className="text-2xl font-bold text-gray-900 tracking-tight">EDU</span>
-          </Link>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Connexion à votre espace
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Choisissez votre profil pour accéder à votre espace
-          </p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md p-8 space-y-8 shadow-xl">
+        <div className="text-center space-y-2">
+          <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center text-white mx-auto mb-4">
+            <GraduationCap className="h-8 w-8" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">Connexion EDU</h1>
+          <p className="text-gray-500">Accédez à votre espace de gestion scolaire.</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <button
-            onClick={() => setRole("admin")}
-            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-              role === "admin" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
-            }`}
-          >
-            <Shield className="h-6 w-6" />
-            <span className="text-xs font-bold uppercase">Admin</span>
-          </button>
-          <button
-            onClick={() => setRole("teacher")}
-            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-              role === "teacher" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
-            }`}
-          >
-            <Users className="h-6 w-6" />
-            <span className="text-xs font-bold uppercase">Prof</span>
-          </button>
-          <button
-            onClick={() => setRole("parent")}
-            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-              role === "parent" ? "border-primary bg-blue-50 text-primary" : "border-gray-100 bg-white text-gray-400 hover:border-gray-200"
-            }`}
-          >
-            <UserCircle className="h-6 w-6" />
-            <span className="text-xs font-bold uppercase">Parent</span>
-          </button>
-        </div>
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm font-medium border border-red-100">
+            {error}
+          </div>
+        )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="-space-y-px rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only text-gray-900">
-                Email
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                required
-                className="relative block w-full rounded-t-md border-0 py-3 px-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                placeholder="votre@email.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only text-gray-900">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="relative block w-full rounded-b-md border-0 py-3 px-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
-                placeholder="••••••••"
-              />
-            </div>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="flex bg-gray-100 p-1 rounded-lg">
+             {(["ADMIN", "TEACHER", "PARENT"] as const).map((r) => (
+               <button
+                 key={r}
+                 type="button"
+                 onClick={() => setRole(r)}
+                 className={`flex-1 py-2 text-xs font-bold rounded-md transition-all ${
+                   role === r ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                 }`}
+               >
+                 {r === 'ADMIN' ? 'Admin' : r === 'TEACHER' ? 'Prof' : 'Parent'}
+               </button>
+             ))}
           </div>
 
-          <div>
-            <Button type="submit" className="w-full py-6 text-lg font-bold">
-              Accéder à mon espace {role === "admin" ? "Directeur" : role === "teacher" ? "Enseignant" : "Parent"}
-            </Button>
+          <div className="space-y-4">
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <div className="relative">
+                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                   <input
+                     type="email"
+                     name="email"
+                     required
+                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                     placeholder="votre@email.com"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                   />
+                </div>
+             </div>
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                <div className="relative">
+                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                   <input
+                     type="password"
+                     name="password"
+                     required
+                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                     placeholder="********"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                   />
+                </div>
+             </div>
           </div>
+
+          <Button type="submit" className="w-full bg-primary font-bold py-6" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Se connecter"}
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

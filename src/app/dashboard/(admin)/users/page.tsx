@@ -3,17 +3,25 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, UserPlus, Link as LinkIcon, Search, MoreHorizontal } from "lucide-react"
-
-const users = [
-  { id: 1, name: "Ahmed Alaoui", role: "Enseignant", email: "ahmed@edu.ma", status: "Actif" },
-  { id: 2, name: "Salma Bennani", role: "Parent", email: "salma@email.com", status: "Actif" },
-  { id: 3, name: "Youssef Mansouri", role: "Enseignant", email: "youssef@edu.ma", status: "Actif" },
-  { id: 4, name: "Khadija El Fassi", role: "Parent", email: "khadija@email.com", status: "En attente" },
-]
+import { getAdminUsers } from "@/actions/data"
+import { createUser } from "@/actions/admin"
 
 export default function UsersPage() {
+  const [users, setUsers] = React.useState<any[]>([])
   const [showCreateForm, setShowCreateForm] = React.useState(false)
   const [showLinkModal, setShowLinkModal] = React.useState(false)
+
+  React.useEffect(() => {
+    getAdminUsers().then(setUsers)
+  }, [])
+
+  const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    await createUser(formData)
+    setShowCreateForm(false)
+    getAdminUsers().then(setUsers)
+  }
 
   return (
     <div className="space-y-6">
@@ -130,39 +138,41 @@ export default function UsersPage() {
         </div>
       </Card>
 
-      {/* Create User Modal Mockup */}
+      {/* Create User Modal */}
       {showCreateForm && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg p-6 space-y-4">
-               <h3 className="text-xl font-bold">Créer un nouveau compte</h3>
-               <div className="grid grid-cols-1 gap-4">
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-                     <input type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Omar Tazi" />
-                  </div>
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                     <input type="email" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="omar@email.com" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
-                        <select className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                           <option>Enseignant</option>
-                           <option>Parent</option>
-                        </select>
-                     </div>
-                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                        <input type="password" value="********" readOnly className="w-full px-4 py-2 rounded-lg border border-gray-200 bg-gray-50" />
-                     </div>
-                  </div>
-               </div>
-               <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowCreateForm(false)}>Annuler</Button>
-                  <Button onClick={() => setShowCreateForm(false)}>Créer le compte</Button>
-               </div>
-            </Card>
+            <form onSubmit={handleCreateUser}>
+              <Card className="w-full max-w-lg p-6 space-y-4">
+                 <h3 className="text-xl font-bold">Créer un nouveau compte</h3>
+                 <div className="grid grid-cols-1 gap-4">
+                    <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
+                       <input name="name" required type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Omar Tazi" />
+                    </div>
+                    <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                       <input name="email" required type="email" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="omar@email.com" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
+                          <select name="role" className="w-full px-4 py-2 rounded-lg border border-gray-200">
+                             <option value="TEACHER">Enseignant</option>
+                             <option value="PARENT">Parent</option>
+                          </select>
+                       </div>
+                       <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                          <input type="password" value="********" readOnly className="w-full px-4 py-2 rounded-lg border border-gray-200 bg-gray-50" />
+                       </div>
+                    </div>
+                 </div>
+                 <div className="flex justify-end gap-3 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>Annuler</Button>
+                    <Button type="submit">Créer le compte</Button>
+                 </div>
+              </Card>
+            </form>
          </div>
       )}
 
