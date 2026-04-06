@@ -2,43 +2,36 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Calendar as CalendarIcon, Clock, MapPin, ChevronLeft, ChevronRight, User } from "lucide-react"
-
-const schedule = [
-  { day: "Lundi", lessons: [
-    { time: "08:30 - 10:00", subject: "Mathématiques", teacher: "M. Alaoui", room: "Salle 12" },
-    { time: "10:15 - 11:45", subject: "Français", teacher: "Mme. Bennani", room: "Salle 05" },
-    { time: "14:30 - 16:00", subject: "Éducation Islamique", teacher: "M. Mansouri", room: "Salle 12" },
-  ]},
-  { day: "Mardi", lessons: [
-    { time: "09:00 - 10:30", subject: "Français", teacher: "Mme. Bennani", room: "Salle 08" },
-    { time: "11:00 - 12:30", subject: "Activités d'Éveil", teacher: "M. Tazi", room: "Labo 1" },
-    { time: "15:00 - 16:30", subject: "Mathématiques", teacher: "M. Alaoui", room: "Salle 12" },
-  ]},
-  { day: "Mercredi", lessons: [
-    { time: "08:30 - 10:00", subject: "Arabe", teacher: "Mme. Fassi", room: "Salle 12" },
-    { time: "10:15 - 11:45", subject: "Français", teacher: "Mme. Bennani", room: "Admin" },
-  ]},
-  { day: "Jeudi", lessons: [
-    { time: "08:30 - 10:00", subject: "Français", teacher: "Mme. Bennani", room: "Salle 05" },
-    { time: "10:15 - 11:45", subject: "Mathématiques", teacher: "M. Alaoui", room: "Salle 12" },
-    { time: "14:30 - 16:00", subject: "Éducation Physique", teacher: "M. Karim", room: "Terrain" },
-  ]},
-  { day: "Vendredi", lessons: [
-    { time: "09:00 - 10:30", subject: "Soutien", teacher: "M. Alaoui", room: "Labo 2" },
-    { time: "11:00 - 12:30", subject: "Arabe", teacher: "Mme. Fassi", room: "Salle 12" },
-  ]},
-]
+import { getMyData } from "@/actions/data"
 
 export default function ParentCalendarPage() {
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getMyData().then((res: any) => {
+        if (Array.isArray(res)) setStudents(res)
+    })
+  }, [])
+
+  const student = students[0]
+
+  const schedule = [
+    { day: "Lundi", lessons: student ? [{ time: "08:30 - 10:00", subject: "Cours", teacher: student.class?.teacher?.name || 'Titulaire', room: student.class?.room || 'Salle 12' }] : [] },
+    { day: "Mardi", lessons: [] },
+    { day: "Mercredi", lessons: [] },
+    { day: "Jeudi", lessons: [] },
+    { day: "Vendredi", lessons: [] },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
          <div>
             <h2 className="text-xl font-bold flex items-center gap-2 text-primary">
                <CalendarIcon className="h-5 w-5" />
-               Emploi du Temps de Youssef
+               Emploi du Temps de {student?.name || 'votre enfant'}
             </h2>
-            <p className="text-sm text-gray-500">Année scolaire 2023 - 2024 • Classe CP-B</p>
+            <p className="text-sm text-gray-500">Année scolaire 2024 - 2025 • Classe {student?.class?.name || 'N/A'}</p>
          </div>
          <div className="flex items-center gap-2 self-end sm:self-auto">
             <button className="p-2 hover:bg-gray-100 rounded-lg border border-gray-200"><ChevronLeft className="h-4 w-4" /></button>
@@ -70,6 +63,11 @@ export default function ParentCalendarPage() {
                    </div>
                 </Card>
               ))}
+              {day.lessons.length === 0 && (
+                <div className="h-20 border border-dashed border-gray-200 rounded-xl flex items-center justify-center text-[10px] text-gray-400 italic">
+                    Aucun cours
+                </div>
+              )}
            </div>
          ))}
       </div>

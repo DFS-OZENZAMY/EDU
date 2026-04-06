@@ -3,14 +3,23 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Wallet, CreditCard, Receipt, TrendingUp, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-const transactions = [
-  { id: 1, type: "Frais de scolarité", amount: "1,200 MAD", date: "05/04/2024", status: "Payé", method: "Virement" },
-  { id: 2, type: "Cantine - Avril", amount: "450 MAD", date: "01/04/2024", status: "Payé", method: "Espèces" },
-  { id: 3, type: "Transport - Avril", amount: "300 MAD", date: "01/04/2024", status: "Payé", method: "Espèces" },
-]
+import { getSession } from "@/actions/auth"
+import { prisma } from "@/lib/prisma"
 
 export default function ParentFinancePage() {
+  const [fees, setFees] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getSession().then(async (user: any) => {
+        if (user) {
+            const res = await prisma.fee.findMany({
+                where: { parentId: user.id },
+                orderBy: { id: 'desc' }
+            })
+            setFees(res)
+        }
+    })
+  }, [])
   return (
     <div className="space-y-8">
       <div>
@@ -86,16 +95,16 @@ export default function ParentFinancePage() {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                     {transactions.map((t) => (
+                     {fees.map((t) => (
                         <tr key={t.id} className="hover:bg-gray-50/80 transition-colors">
-                           <td className="px-6 py-4 font-bold text-sm text-gray-900">{t.type}</td>
-                           <td className="px-6 py-4 text-sm text-right font-black text-gray-900">{t.amount}</td>
-                           <td className="px-6 py-4 text-[11px] font-medium text-gray-500">{t.date}</td>
-                           <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase tracking-wider">{t.method}</td>
+                           <td className="px-6 py-4 font-bold text-sm text-gray-900">Frais de scolarité - {t.month}</td>
+                           <td className="px-6 py-4 text-sm text-right font-black text-gray-900">{t.amount} DH</td>
+                           <td className="px-6 py-4 text-[11px] font-medium text-gray-500">{t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
+                           <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase tracking-wider">Virement</td>
                            <td className="px-6 py-4">
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-green-50 text-green-700">
-                                 <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                                 {t.status}
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${t.status === 'PAID' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                 <div className={`h-1.5 w-1.5 rounded-full ${t.status === 'PAID' ? 'bg-green-600' : 'bg-red-600'}`} />
+                                 {t.status === 'PAID' ? 'Payé' : 'En attente'}
                               </span>
                            </td>
                            <td className="px-6 py-4 text-right">

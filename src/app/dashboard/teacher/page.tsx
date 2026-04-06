@@ -31,6 +31,27 @@ export default function TeacherDashboardPage() {
     setStartTime(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
   }
 
+  if (classes.length === 0) {
+    return (
+        <div className="space-y-8">
+            <div className="bg-green-600 rounded-2xl p-8 text-white flex justify-between items-center overflow-hidden relative shadow-lg">
+                <div className="relative z-10">
+                    <h2 className="text-2xl font-bold mb-2">Bienvenue Professeur !</h2>
+                    <p className="text-green-100 max-w-md italic">Votre compte est actif. Veuillez attendre que l'administration vous assigne vos classes pour commencer à gérer vos élèves.</p>
+                </div>
+                <Clock className="absolute -right-8 -top-8 h-48 w-48 text-white/10 -rotate-12 pointer-events-none" />
+            </div>
+            <Card className="p-12 text-center border-2 border-dashed border-gray-200 rounded-3xl">
+                <div className="h-16 w-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Aucune classe assignée</h3>
+                <p className="text-gray-500 max-w-sm mx-auto">Contactez l'administrateur pour mettre à jour votre emploi du temps et votre liste d'élèves.</p>
+            </Card>
+        </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Overview Banner */}

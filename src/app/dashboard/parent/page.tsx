@@ -15,6 +15,27 @@ export default function ParentDashboardPage() {
 
   const student = data[0]
 
+  if (data.length === 0) {
+    return (
+        <div className="space-y-8">
+            <div className="bg-blue-600 rounded-2xl p-8 text-white flex justify-between items-center overflow-hidden relative shadow-lg">
+                <div className="relative z-10">
+                    <h2 className="text-2xl font-bold mb-2">Bienvenue sur votre espace Parent !</h2>
+                    <p className="text-blue-100 max-w-md italic">Votre compte est actif. Veuillez contacter l'administration pour lier le dossier de votre enfant à votre compte.</p>
+                </div>
+                <Users className="h-32 w-32 text-white/10 absolute -right-4 -bottom-4 rotate-12" />
+            </div>
+            <Card className="p-12 text-center border-2 border-dashed border-gray-200 rounded-3xl">
+                <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun enfant trouvé</h3>
+                <p className="text-gray-500 max-w-sm mx-auto">Une fois que l'école aura effectué la liaison, vous pourrez suivre les notes, les absences et l'emploi du temps ici.</p>
+            </Card>
+        </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Overview Banner */}

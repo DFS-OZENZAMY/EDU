@@ -26,11 +26,15 @@ export default function LinkAccountsPage() {
   const handleLink = async () => {
     setIsLinking(true)
     const formData = new FormData()
-    // Using IDs from the searches (assuming search input is ID for prototype)
     formData.append("parentId", parentSearch)
     formData.append("studentId", studentSearch)
     await linkParentStudent(formData)
     setIsLinking(false)
+    // Refresh data
+    getAllStudents().then(data => {
+        setStudents(data)
+        setLinks(data.filter(s => s.parentId !== null))
+    })
     alert("Lien créé avec succès !")
   }
 
@@ -68,32 +72,32 @@ export default function LinkAccountsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                 {activeTab === 'parent' ? 'Rechercher le Parent' : 'Rechercher le Professeur'}
+                 Sélectionner le Parent
               </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm"
-                  placeholder={activeTab === 'parent' ? "Nom ou Email du parent..." : "Nom ou Matricule du prof..."}
-                  value={parentSearch}
-                  onChange={(e) => setParentSearch(e.target.value)}
-                />
-              </div>
+              <select
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm"
+                value={parentSearch}
+                onChange={(e) => setParentSearch(e.target.value)}
+              >
+                <option value="">Choisir un parent...</option>
+                {parents.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.email})</option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rechercher l'Élève</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm"
-                  placeholder="Nom de l'élève..."
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sélectionner l'Élève</label>
+              <select
+                className="w-full px-4 py-2 rounded-lg border border-gray-200 text-sm"
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+              >
+                <option value="">Choisir un élève...</option>
+                {students.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.class?.name || 'Sans classe'})</option>
+                ))}
+              </select>
             </div>
 
             {activeTab === 'teacher' && (

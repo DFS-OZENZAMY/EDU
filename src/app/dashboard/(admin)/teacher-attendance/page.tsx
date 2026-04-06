@@ -3,16 +3,18 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar, Search, CheckCircle, XCircle, Clock } from "lucide-react"
-
-const teachers = [
-  { id: 1, name: "Ahmed Alaoui", subject: "Français", status: "Present", time: "08:25" },
-  { id: 2, name: "Youssef Mansouri", subject: "Mathématiques", status: "Late", time: "08:45" },
-  { id: 3, name: "Sara El Fassi", subject: "Arabe", status: "Absent", time: "-" },
-  { id: 4, name: "Omar Tazi", subject: "Sport", status: "Present", time: "08:15" },
-]
+import { getAdminUsers } from "@/actions/data"
 
 export default function TeacherAttendancePage() {
-  const [selectedDate, setSelectedDate] = React.useState("2024-04-14")
+  const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0])
+  const [teachers, setTeachers] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getAdminUsers().then(data => setTeachers(data.filter(u => u.role === 'TEACHER')))
+  }, [])
+
+  const presentCount = teachers.filter(t => t.clockIns?.length > 0).length
+  const absentCount = teachers.length - presentCount
 
   return (
     <div className="space-y-6">
@@ -35,27 +37,25 @@ export default function TeacherAttendancePage() {
         </div>
       </div>
 
-      {/* Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
          <Card className="p-4 border-l-4 border-l-blue-500">
             <p className="text-sm text-gray-500">Total Enseignants</p>
-            <p className="text-2xl font-bold">28</p>
+            <p className="text-2xl font-bold">{teachers.length}</p>
          </Card>
          <Card className="p-4 border-l-4 border-l-green-500">
             <p className="text-sm text-gray-500">Présents</p>
-            <p className="text-2xl font-bold">24</p>
+            <p className="text-2xl font-bold">{presentCount}</p>
          </Card>
          <Card className="p-4 border-l-4 border-l-orange-500">
             <p className="text-sm text-gray-500">En retard</p>
-            <p className="text-2xl font-bold">2</p>
+            <p className="text-2xl font-bold">0</p>
          </Card>
          <Card className="p-4 border-l-4 border-l-red-500">
             <p className="text-sm text-gray-500">Absents</p>
-            <p className="text-2xl font-bold">2</p>
+            <p className="text-2xl font-bold">{absentCount}</p>
          </Card>
       </div>
 
-      {/* Attendance List */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-gray-100">
            <div className="relative max-w-md">
@@ -79,47 +79,48 @@ export default function TeacherAttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {teachers.map((teacher) => (
-                <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                        {teacher.name.charAt(0)}
+              {teachers.map((teacher) => {
+                const clockIn = teacher.clockIns?.[0]
+                const status = clockIn ? 'Present' : 'Absent'
+                const time = clockIn ? new Date(clockIn.time).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : '-'
+
+                return (
+                  <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                          {teacher.name.charAt(0)}
+                        </div>
+                        <span className="font-medium text-gray-900">{teacher.name}</span>
                       </div>
-                      <span className="font-medium text-gray-900">{teacher.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{teacher.subject}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-2">
-                       <Clock className="h-3 w-3" />
-                       {teacher.time}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {teacher.status === 'Present' && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                           <CheckCircle className="h-3 w-3" /> Présent
-                        </span>
-                      )}
-                      {teacher.status === 'Late' && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
-                           <Clock className="h-3 w-3" /> En retard
-                        </span>
-                      )}
-                      {teacher.status === 'Absent' && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                           <XCircle className="h-3 w-3" /> Absent
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button className="text-primary hover:underline font-medium">Modifier</button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{teacher.teacherClasses?.[0]?.name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-2">
+                         <Clock className="h-3 w-3" />
+                         {time}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {status === 'Present' && (
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                             <CheckCircle className="h-3 w-3" /> Présent
+                          </span>
+                        )}
+                        {status === 'Absent' && (
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                             <XCircle className="h-3 w-3" /> Absent
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                        <button className="text-primary hover:underline font-medium">Modifier</button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

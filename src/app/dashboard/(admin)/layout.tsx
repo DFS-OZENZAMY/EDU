@@ -11,13 +11,15 @@ import {
   Wallet,
   Settings,
   LogOut,
-  Bell
+  Bell,
+  User as UserIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { logout } from "@/actions/auth"
+import { logout, getSession } from "@/actions/auth"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 const sidebarNavigation = [
-  { name: "Tableau de bord", href: "/dashboard/overview", icon: LayoutDashboard },
+  { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/dashboard/users", icon: Users },
   { name: "Liaisons", href: "/dashboard/link-accounts", icon: GraduationCap },
   { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar },
@@ -26,6 +28,7 @@ const sidebarNavigation = [
   { name: "Notes & Bulletins", href: "/dashboard/grades", icon: BarChart3 },
   { name: "Emploi du temps", href: "/dashboard/calendar", icon: Calendar },
   { name: "Finances", href: "/dashboard/finance", icon: Wallet },
+  { name: "Mon Profil", href: "/dashboard/profile", icon: UserIcon },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ]
 
@@ -35,6 +38,11 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getSession().then(setUser)
+  }, [])
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -78,30 +86,15 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 md:pl-64 overflow-hidden">
-        {/* Header */}
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-200 sticky top-0 z-10">
-          <h1 className="text-xl font-bold text-gray-900">
-             {sidebarNavigation.find(n => n.href === pathname)?.name || "Tableau de bord"}
-          </h1>
-          <div className="flex items-center gap-6">
-             <button className="text-gray-500 hover:text-primary relative">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
-             </button>
-             <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                   <p className="text-sm font-bold text-gray-900 leading-none">Admin EDU</p>
-                   <p className="text-xs text-gray-500">École Pilote 01</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center overflow-hidden">
-                   <Users className="h-6 w-6 text-gray-400" />
-                </div>
-             </div>
-          </div>
-        </header>
+        <DashboardHeader
+          user={user}
+          navigation={sidebarNavigation}
+          roleLabel="ADMIN"
+          roleColor="bg-primary"
+        />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
            {children}
         </main>
       </div>

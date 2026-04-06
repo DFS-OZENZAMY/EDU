@@ -2,20 +2,24 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Calendar, CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react"
-
-const monthlyAttendance = [
-  { day: "14 Avril", status: "Present", time: "08:15", subject: "Maths" },
-  { day: "13 Avril", status: "Present", time: "08:20", subject: "Français" },
-  { day: "12 Avril", status: "Late", time: "08:45", subject: "Arabe" },
-  { day: "11 Avril", status: "Present", time: "08:10", subject: "Sciences" },
-  { day: "10 Avril", status: "Absent", time: "-", subject: "Sport" },
-]
+import { getMyData } from "@/actions/data"
 
 export default function ParentAttendancePage() {
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getMyData().then((res: any) => {
+        if (Array.isArray(res)) setStudents(res)
+    })
+  }, [])
+
+  const student = students[0]
+  const attendance = student?.attendance || []
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Présence de Youssef</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Présence de {student?.name || 'votre enfant'}</h2>
         <p className="text-gray-500 text-sm">Suivez la ponctualité et l'assiduité de votre enfant ce mois-ci.</p>
       </div>
 
@@ -53,27 +57,27 @@ export default function ParentAttendancePage() {
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                  {monthlyAttendance.map((log, i) => (
+                  {attendance.map((log: any, i: number) => (
                      <tr key={i} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900">{log.day}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 font-medium italic">{log.subject}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{new Date(log.date).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium italic">Général</td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                            <div className="flex items-center gap-2">
-                              <Clock className="h-3.5 w-3.5" /> {log.time}
+                              <Clock className="h-3.5 w-3.5" /> {new Date(log.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}
                            </div>
                         </td>
                         <td className="px-6 py-4">
-                           {log.status === 'Present' && (
+                           {log.status === 'PRESENT' && (
                               <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full w-fit">
                                  <CheckCircle className="h-3 w-3" /> Présent
                               </span>
                            )}
-                           {log.status === 'Late' && (
+                           {log.status === 'LATE' && (
                               <span className="flex items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full w-fit">
                                  <AlertCircle className="h-3 w-3" /> Retard
                               </span>
                            )}
-                           {log.status === 'Absent' && (
+                           {log.status === 'ABSENT' && (
                               <span className="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full w-fit">
                                  <XCircle className="h-3 w-3" /> Absent
                               </span>
@@ -81,6 +85,13 @@ export default function ParentAttendancePage() {
                         </td>
                      </tr>
                   ))}
+                  {attendance.length === 0 && (
+                    <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500 italic text-sm">
+                            Aucune donnée de présence pour le moment.
+                        </td>
+                    </tr>
+                  )}
                </tbody>
             </table>
          </div>

@@ -1,16 +1,15 @@
+"use client"
+import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Search, Plus, Filter, MoreVertical, Download } from "lucide-react"
-
-const students = [
-  { id: "1029", name: "Amine El Amrani", class: "CP-A", status: "Inscrit", payment: "Payé" },
-  { id: "1030", name: "Sara Mansouri", class: "CP-B", status: "Inscrit", payment: "Retard" },
-  { id: "1031", name: "Omar Rahmouni", class: "CE1-A", status: "Inscrit", payment: "Payé" },
-  { id: "1032", name: "Yasmine Joudar", class: "CE2-A", status: "Inscrit", payment: "Payé" },
-  { id: "1033", name: "Mehdi Tazi", class: "CM1-C", status: "En attente", payment: "Retard" },
-  { id: "1034", name: "Layla Fekkak", class: "CM2-B", status: "Inscrit", payment: "Payé" },
-]
+import { getAllStudents } from "@/actions/data"
 
 export default function StudentsPage() {
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getAllStudents().then(setStudents)
+  }, [])
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -58,19 +57,17 @@ export default function StudentsPage() {
                      <tr key={student.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-6 py-4 text-sm font-bold text-gray-900">#{student.id}</td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-700">{student.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{student.class}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{student.class?.name || "N/A"}</td>
                         <td className="px-6 py-4">
-                           <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
-                              student.status === "Inscrit" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                           }`}>
-                              {student.status}
+                           <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full bg-green-100 text-green-700`}>
+                              Inscrit
                            </span>
                         </td>
                         <td className="px-6 py-4">
                            <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-full ${
-                              student.payment === "Payé" ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"
+                              student.parent?.fees?.[0]?.status === 'PAID' ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"
                            }`}>
-                              {student.payment}
+                              {student.parent?.fees?.[0]?.status === 'PAID' ? "Payé" : "Retard"}
                            </span>
                         </td>
                         <td className="px-6 py-4 text-center">

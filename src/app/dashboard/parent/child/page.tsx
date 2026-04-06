@@ -1,22 +1,41 @@
+"use client"
+import * as React from "react"
 import { GraduationCap, Users, Calendar, MapPin, Award } from "lucide-react"
+import { getMyData } from "@/actions/data"
 
 export default function ParentChildProfilePage() {
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getMyData().then((res: any) => {
+        if (Array.isArray(res)) setStudents(res)
+    })
+  }, [])
+
+  const student = students[0]
+
+  if (!student) return (
+    <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-200 rounded-3xl italic text-gray-500">
+        Aucun enfant associé à ce compte.
+    </div>
+  )
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="bg-blue-600 rounded-3xl p-12 text-white flex flex-col md:flex-row items-center gap-8 shadow-xl relative overflow-hidden">
          <div className="relative z-10 w-32 h-32 rounded-full border-4 border-white/30 bg-blue-500 flex items-center justify-center text-5xl font-black shadow-inner">
-            YB
+            {student.name.charAt(0)}
          </div>
          <div className="relative z-10 text-center md:text-left">
-            <h2 className="text-3xl font-extrabold mb-2">Youssef Bennani</h2>
+            <h2 className="text-3xl font-extrabold mb-2">{student.name}</h2>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md border border-white/20">
                   <GraduationCap className="h-4 w-4" />
-                  Classe: CP - Section B
+                  Classe: {student.class?.name || "N/A"}
                </span>
                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-md border border-white/20">
                   <Award className="h-4 w-4" />
-                  Matricule: #2024-YB-01
+                  Matricule: #{2024000 + student.id}
                </span>
             </div>
          </div>
@@ -31,21 +50,21 @@ export default function ParentChildProfilePage() {
                   <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><Users className="h-5 w-5" /></div>
                   <div>
                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Enseignant Titulaire</p>
-                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">Ahmed Alaoui</p>
+                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">{student.class?.teacher?.name || "N/A"}</p>
                   </div>
                </div>
                <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><MapPin className="h-5 w-5" /></div>
                   <div>
                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Localisation</p>
-                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">Salle 12 • Bloc Primaire A</p>
+                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">{student.class?.room || "N/A"}</p>
                   </div>
                </div>
                <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><Calendar className="h-5 w-5" /></div>
                   <div>
-                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date d'inscription</p>
-                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">05 Septembre 2023</p>
+                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Niveau</p>
+                     <p className="text-sm font-black text-gray-900 uppercase tracking-tighter">{student.class?.level || "N/A"}</p>
                   </div>
                </div>
             </div>

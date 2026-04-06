@@ -14,7 +14,8 @@ import {
   ClipboardCheck
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { logout } from "@/actions/auth"
+import { logout, getSession } from "@/actions/auth"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 const sidebarNavigation = [
   { name: "Tableau de bord", href: "/dashboard/parent", icon: LayoutDashboard },
@@ -24,6 +25,7 @@ const sidebarNavigation = [
   { name: "Emploi du temps", href: "/dashboard/parent/calendar", icon: Calendar },
   { name: "Paiements & Frais", href: "/dashboard/parent/finance", icon: Wallet },
   { name: "Message à l'école", href: "/dashboard/parent/messages", icon: MessageSquare },
+  { name: "Mon Profil", href: "/dashboard/profile", icon: LayoutDashboard },
 ]
 
 export default function ParentLayout({
@@ -32,6 +34,11 @@ export default function ParentLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getSession().then(setUser)
+  }, [])
 
   return (
     <div className="flex h-screen bg-blue-50/30 overflow-hidden">
@@ -76,30 +83,15 @@ export default function ParentLayout({
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 md:pl-64 overflow-hidden">
-        {/* Header */}
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-200 sticky top-0 z-10">
-          <h1 className="text-xl font-bold text-gray-900">
-             {sidebarNavigation.find(n => n.href === pathname)?.name || "Espace Parent"}
-          </h1>
-          <div className="flex items-center gap-6">
-             <button className="text-gray-500 hover:text-blue-600 relative">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
-             </button>
-             <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                   <p className="text-sm font-bold text-gray-900 leading-none">Mme Salma Bennani</p>
-                   <p className="text-xs text-gray-500">Parent de Youssef Bennani</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden">
-                   <Users className="h-6 w-6 text-blue-600" />
-                </div>
-             </div>
-          </div>
-        </header>
+        <DashboardHeader
+          user={user}
+          navigation={sidebarNavigation}
+          roleLabel="PARENT"
+          roleColor="bg-blue-600"
+        />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
            {children}
         </main>
       </div>

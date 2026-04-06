@@ -19,6 +19,11 @@ export async function getParentData(parentId: number) {
 
 export async function getAdminUsers() {
   return await prisma.user.findMany({
+    include: {
+        fees: true,
+        parentStudents: true,
+        teacherClasses: true
+    },
     orderBy: { createdAt: 'desc' }
   })
 }

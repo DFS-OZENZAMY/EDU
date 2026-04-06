@@ -13,7 +13,8 @@ import {
   MessageSquare
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { logout } from "@/actions/auth"
+import { logout, getSession } from "@/actions/auth"
+import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 const sidebarNavigation = [
   { name: "Tableau de bord", href: "/dashboard/teacher", icon: LayoutDashboard },
@@ -22,6 +23,7 @@ const sidebarNavigation = [
   { name: "Appel de Présence", href: "/dashboard/teacher/attendance", icon: CheckSquare },
   { name: "Mon Emploi du temps", href: "/dashboard/teacher/calendar", icon: Calendar },
   { name: "Messages Parents", href: "/dashboard/teacher/messages", icon: MessageSquare },
+  { name: "Mon Profil", href: "/dashboard/profile", icon: LayoutDashboard },
 ]
 
 export default function TeacherLayout({
@@ -30,6 +32,11 @@ export default function TeacherLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getSession().then(setUser)
+  }, [])
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -74,30 +81,15 @@ export default function TeacherLayout({
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 md:pl-64 overflow-hidden">
-        {/* Header */}
-        <header className="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-200 sticky top-0 z-10">
-          <h1 className="text-xl font-bold text-gray-900">
-             {sidebarNavigation.find(n => n.href === pathname)?.name || "Espace Enseignant"}
-          </h1>
-          <div className="flex items-center gap-6">
-             <button className="text-gray-500 hover:text-green-600 relative">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
-             </button>
-             <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                   <p className="text-sm font-bold text-gray-900 leading-none">Prof. Ahmed Alaoui</p>
-                   <p className="text-xs text-gray-500">Français - Primaire</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-center overflow-hidden">
-                   <Users className="h-6 w-6 text-green-600" />
-                </div>
-             </div>
-          </div>
-        </header>
+        <DashboardHeader
+          user={user}
+          navigation={sidebarNavigation}
+          roleLabel="PROF"
+          roleColor="bg-green-600"
+        />
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
            {children}
         </main>
       </div>

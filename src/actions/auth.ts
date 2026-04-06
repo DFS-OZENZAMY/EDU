@@ -28,7 +28,7 @@ export async function login(formData: FormData) {
   cookieStore.set("userId", user.id.toString(), { path: "/", httpOnly: true, secure: true })
   cookieStore.set("userRole", user.role, { path: "/", httpOnly: true, secure: true })
 
-  if (user.role === "ADMIN") redirect("/dashboard/users")
+  if (user.role === "ADMIN") redirect("/dashboard/overview")
   if (user.role === "TEACHER") redirect("/dashboard/teacher")
   if (user.role === "PARENT") redirect("/dashboard/parent")
 }

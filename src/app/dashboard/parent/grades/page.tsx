@@ -2,20 +2,24 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { BarChart3, TrendingUp, Calendar, AlertCircle } from "lucide-react"
-
-const subjectResults = [
-  { name: "Mathématiques", avg: "18.5", status: "Très Bien", evolution: "+0.5" },
-  { name: "Français", avg: "16.0", status: "Bien", evolution: "-0.2" },
-  { name: "Arabe", avg: "17.0", status: "Très Bien", evolution: "+1.0" },
-  { name: "Sciences", avg: "15.5", status: "Bien", evolution: "+0.3" },
-  { name: "Sport", avg: "19.0", status: "Excellent", evolution: "0.0" },
-]
+import { getMyData } from "@/actions/data"
 
 export default function ParentGradesPage() {
+  const [students, setStudents] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    getMyData().then((res: any) => {
+        if (Array.isArray(res)) setStudents(res)
+    })
+  }, [])
+
+  const student = students[0]
+  const grades = student?.grades || []
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Résultats de Youssef</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Résultats de {student?.name || 'votre enfant'}</h2>
         <p className="text-gray-500 text-sm">Suivez l'évolution académique de votre enfant par matière.</p>
       </div>
 
@@ -57,31 +61,29 @@ export default function ParentGradesPage() {
                   </tr>
                </thead>
                <tbody className="divide-y divide-slate-100">
-                  {subjectResults.map((subject, i) => (
+                  {grades.map((grade: any, i: number) => (
                      <tr key={i} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900">{subject.name}</td>
+                        <td className="px-6 py-4 font-medium text-gray-900">{grade.subject}</td>
                         <td className="px-6 py-4">
-                           <span className="text-lg font-bold text-primary">{subject.avg}</span>
+                           <span className="text-lg font-bold text-primary">{grade.value}</span>
                         </td>
                         <td className="px-6 py-4">
-                           <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              subject.status === 'Excellent' || subject.status === 'Très Bien'
-                              ? 'bg-green-50 text-green-700'
-                              : 'bg-blue-50 text-blue-700'
-                           }`}>
-                              {subject.status}
+                           <span className={`text-xs font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-700`}>
+                              {grade.observation || 'Validé'}
                            </span>
                         </td>
-                        <td className="px-6 py-4">
-                           <div className={`flex items-center text-sm font-medium ${
-                              subject.evolution.startsWith('+') ? 'text-green-600' :
-                              subject.evolution.startsWith('-') ? 'text-red-500' : 'text-gray-400'
-                           }`}>
-                              {subject.evolution}
-                           </div>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                           {new Date(grade.date).toLocaleDateString()}
                         </td>
                      </tr>
                   ))}
+                  {grades.length === 0 && (
+                    <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-gray-500 italic text-sm">
+                            Aucune note enregistrée pour le moment.
+                        </td>
+                    </tr>
+                  )}
                </tbody>
             </table>
          </div>
