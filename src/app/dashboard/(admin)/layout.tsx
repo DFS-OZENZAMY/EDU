@@ -29,6 +29,7 @@ const sidebarNavigation = [
   { name: "Emploi du temps", href: "/dashboard/calendar", icon: Calendar },
   { name: "Finances", href: "/dashboard/finance", icon: Wallet },
   { name: "Mon Profil", href: "/dashboard/profile", icon: UserIcon },
+  { name: "Cantine", href: "/dashboard/canteen", icon: Wallet },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ]
 

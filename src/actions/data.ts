@@ -2,20 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
-
-export async function getParentData(parentId: number) {
-  const students = await prisma.student.findMany({
-    where: { parentId },
-    include: {
-      class: {
-        include: { teacher: true }
-      },
-      grades: true,
-      attendance: true
-    }
-  })
-  return students
-}
+import { revalidatePath } from "next/cache"
 
 export async function getAdminUsers() {
   return await prisma.user.findMany({
@@ -53,7 +40,8 @@ export async function getAllStudents() {
   return await prisma.student.findMany({
     include: {
       class: true,
-      parent: true
+      parent: true,
+      grades: true
     }
   })
 }
@@ -86,7 +74,13 @@ export async function getMyData() {
         }
       }
     })
-    return { students, notifications }
+
+    const today = new Date().toISOString().split('T')[0]
+    const menu = await prisma.canteenMenu.findUnique({
+        where: { date: new Date(today) }
+    })
+
+    return { students, notifications, canteenMenu: menu }
   }
 
   if (userRole === 'TEACHER') {
@@ -122,8 +116,42 @@ export async function getMyData() {
   }
 
   if (userRole === 'ADMIN') {
-    return { notifications }
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        return d.toISOString().split('T')[0];
+    }).reverse();
+
+    const attendanceStats = await Promise.all(last7Days.map(async (date) => {
+        const count = await prisma.attendance.count({
+            where: {
+                date: {
+                    gte: new Date(date),
+                    lt: new Date(new Date(date).getTime() + 86400000)
+                },
+                status: 'PRESENT'
+            }
+        });
+        return {
+            name: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+            value: count
+        };
+    }));
+
+    return { notifications, chartData: attendanceStats }
   }
 
   return null
+}
+
+export async function markNotificationsAsRead() {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get("userId")?.value
+  if (!userId) return
+
+  await prisma.notification.updateMany({
+    where: { userId: parseInt(userId), isRead: false },
+    data: { isRead: true }
+  })
+  revalidatePath("/dashboard")
 }

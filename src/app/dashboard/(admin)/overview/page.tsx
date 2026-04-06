@@ -10,17 +10,22 @@ export default function DashboardPage() {
   const [students, setStudents] = React.useState<any[]>([])
   const [classes, setClasses] = React.useState<any[]>([])
   const [notifications, setNotifications] = React.useState<any[]>([])
+  const [chartData, setChartData] = React.useState<any[]>([])
 
   React.useEffect(() => {
     getAdminUsers().then(setUsers)
     getAllStudents().then(setStudents)
     getAllClasses().then(setClasses)
-    // For admin, we could add specific fetch but let's assume getSession or specific action
-    import("@/actions/data").then(m => {
-        m.getMyData().then((res: any) => {
-            if (res?.notifications) setNotifications(res.notifications)
+
+    const refreshData = () => {
+        import("@/actions/data").then(m => {
+            m.getMyData().then((res: any) => {
+                if (res?.notifications) setNotifications(res.notifications)
+                if (res?.chartData) setChartData(res.chartData)
+            })
         })
-    })
+    }
+    refreshData()
     // Auto-refresh notifications every 30s
     const interval = setInterval(() => {
         import("@/actions/data").then(m => {
@@ -39,14 +44,6 @@ export default function DashboardPage() {
     { name: "Parents", value: users.filter(u => u.role === 'PARENT').length.toString(), icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
   ]
 
-  const data = [
-    { name: 'Lun', value: 4000 },
-    { name: 'Mar', value: 3000 },
-    { name: 'Mer', value: 2000 },
-    { name: 'Jeu', value: 2780 },
-    { name: 'Ven', value: 1890 },
-    { name: 'Sam', value: 2390 },
-  ];
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -100,7 +97,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex-1 w-full h-full min-h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data}>
+                    <BarChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis
                             dataKey="name"

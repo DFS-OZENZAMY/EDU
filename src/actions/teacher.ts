@@ -118,17 +118,34 @@ export async function createLessonLog(formData: FormData) {
   const content = formData.get("content") as string
   const homework = formData.get("homework") as string
 
-  await prisma.lessonLog.create({
+  const log = await prisma.lessonLog.create({
     data: {
       classId,
       teacherId: parseInt(userId),
       subject,
       content,
       homework
-    }
+    },
+    include: { class: { include: { students: true } } }
   })
 
+  // Notify parents of students in this class
+  const studentIds = log.class.students.map(s => s.parentId).filter(id => id !== null) as number[]
+  const uniqueParentIds = Array.from(new Set(studentIds))
+
+  for (const parentId of uniqueParentIds) {
+    await prisma.notification.create({
+        data: {
+            userId: parentId,
+            title: "Cahier de Texte mis à jour",
+            message: `Le cours de ${subject} (${log.class.name}) a été documenté.`,
+            type: "INFO"
+        }
+    })
+  }
+
   revalidatePath("/dashboard/teacher/cahier-texte")
+  revalidatePath("/dashboard/parent")
   return { success: true }
 }
 

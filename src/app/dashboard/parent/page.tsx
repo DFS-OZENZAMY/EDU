@@ -8,12 +8,14 @@ export default function ParentDashboardPage() {
   const [data, setData] = React.useState<any[]>([])
 
   const [notifications, setNotifications] = React.useState<any[]>([])
+  const [canteen, setCanteen] = React.useState<any>(null)
 
   React.useEffect(() => {
     getMyData().then((res: any) => {
         if (res?.students) {
             setData(res.students)
             setNotifications(res.notifications || [])
+            setCanteen(res.canteenMenu)
         }
     })
   }, [])
@@ -133,10 +135,25 @@ export default function ParentDashboardPage() {
             </Card>
 
             <Card className="p-6 bg-gradient-to-br from-blue-700 to-indigo-800 text-white border-0">
-               <h4 className="font-bold text-lg mb-2">Cantine & Transport</h4>
-               <p className="text-xs text-blue-200 mb-6 leading-relaxed italic">Vérifiez le menu de la semaine et suivez le bus scolaire en temps réel.</p>
+               <h4 className="font-bold text-lg mb-2">Menu de la Cantine</h4>
+               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 border border-white/20">
+                    {canteen ? (
+                        <>
+                            <p className="text-[10px] font-black uppercase text-blue-200 mb-1">Plat du jour</p>
+                            <p className="text-sm font-bold mb-2">{canteen.dish}</p>
+                            {canteen.dessert && (
+                                <>
+                                    <p className="text-[10px] font-black uppercase text-blue-200 mb-1">Dessert</p>
+                                    <p className="text-sm font-bold">{canteen.dessert}</p>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-xs italic text-blue-200">Menu non communiqué pour aujourd'hui.</p>
+                    )}
+               </div>
                <div className="space-y-2">
-                  <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all backdrop-blur-sm">Menu de la semaine</button>
+                  <button className="w-full py-2 bg-white text-blue-900 rounded-lg text-xs font-bold transition-all">Consulter la semaine</button>
                   <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all backdrop-blur-sm">Suivi Bus Temps Réel</button>
                </div>
             </Card>

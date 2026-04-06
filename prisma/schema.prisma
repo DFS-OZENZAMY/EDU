@@ -97,6 +97,14 @@ model LessonLog {
   createdAt   DateTime @default(now())
 }
 
+model CanteenMenu {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  dish      String
+  dessert   String?
+  createdAt DateTime @default(now())
+}
+
 model Message {
   id        Int      @id @default(autoincrement())
   content   String

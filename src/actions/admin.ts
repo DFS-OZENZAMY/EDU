@@ -107,3 +107,20 @@ export async function deleteClass(id: number) {
     return { error: "Impossible de supprimer la classe." }
   }
 }
+
+export async function updateCanteenMenu(formData: FormData) {
+  const dish = formData.get("dish") as string
+  const dessert = formData.get("dessert") as string
+  const dateStr = formData.get("date") as string
+  const date = new Date(dateStr)
+
+  await prisma.canteenMenu.upsert({
+    where: { date },
+    update: { dish, dessert },
+    create: { date, dish, dessert }
+  })
+
+  revalidatePath("/dashboard/parent")
+  revalidatePath("/dashboard/canteen")
+  return { success: true }
+}

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { logout } from "@/actions/auth"
+import { markNotificationsAsRead } from "@/actions/data"
 
 interface DashboardHeaderProps {
   user: any
@@ -77,7 +78,15 @@ export function DashboardHeader({ user, navigation, roleLabel, roleColor = "bg-p
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in duration-150">
                     <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
                         <p className="text-xs font-black uppercase text-gray-400">Notifications</p>
-                        <button className="text-[10px] text-primary font-bold hover:underline">Tout marquer comme lu</button>
+                        <button
+                            onClick={async () => {
+                                await markNotificationsAsRead()
+                                setNotifications(prev => prev.map(n => ({...n, isRead: true})))
+                            }}
+                            className="text-[10px] text-primary font-bold hover:underline"
+                        >
+                            Tout marquer comme lu
+                        </button>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                         {notifications.map((n) => (
