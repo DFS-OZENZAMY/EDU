@@ -4,9 +4,13 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
+  await prisma.notification.deleteMany({})
+  await prisma.clockIn.deleteMany({})
+  await prisma.fee.deleteMany({})
   await prisma.message.deleteMany({})
   await prisma.attendance.deleteMany({})
   await prisma.grade.deleteMany({})
+  await prisma.lessonLog.deleteMany({})
   await prisma.student.deleteMany({})
   await prisma.class.deleteMany({})
   await prisma.user.deleteMany({})
@@ -14,11 +18,12 @@ async function main() {
   console.log('Seeding data...')
 
   const hashedPassword = await bcrypt.hash('password123', 10)
+  const adminPassword = await bcrypt.hash('admin123', 10)
 
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'admin@edu.ma',
-      password: hashedPassword,
+      password: adminPassword,
       name: 'Admin EDU',
       role: 'ADMIN',
     },
@@ -26,7 +31,7 @@ async function main() {
 
   const teacher1 = await prisma.user.create({
     data: {
-      email: 'ahmed@edu.ma',
+      email: 'teacher1@edu.ma',
       password: hashedPassword,
       name: 'Ahmed Alaoui',
       role: 'TEACHER',
@@ -35,7 +40,7 @@ async function main() {
 
   const teacher2 = await prisma.user.create({
     data: {
-      email: 'salma@edu.ma',
+      email: 'teacher2@edu.ma',
       password: hashedPassword,
       name: 'Salma Bennani',
       role: 'TEACHER',
@@ -69,7 +74,7 @@ async function main() {
     },
   })
 
-  const student1 = await prisma.student.create({
+  await prisma.student.create({
     data: {
       name: 'Youssef Bennani',
       classId: classB.id,
@@ -77,7 +82,7 @@ async function main() {
     },
   })
 
-  const student2 = await prisma.student.create({
+  await prisma.student.create({
     data: {
       name: 'Sara Alaoui',
       classId: classA.id,

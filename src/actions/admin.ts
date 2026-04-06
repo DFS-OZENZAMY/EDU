@@ -44,42 +44,71 @@ export async function createUser(formData: FormData) {
 }
 
 export async function createClass(formData: FormData) {
-  const name = formData.get("name") as string
-  const level = formData.get("level") as string
-  const room = formData.get("room") as string
-  const teacherId = parseInt(formData.get("teacherId") as string)
+  try {
+    const name = formData.get("name") as string
+    const level = formData.get("level") as string
+    const room = formData.get("room") as string
+    const teacherIdRaw = formData.get("teacherId") as string
+    const teacherId = teacherIdRaw ? parseInt(teacherIdRaw) : null
 
-  await prisma.class.create({
-    data: { name, level, room, teacherId }
-  })
-  revalidatePath("/dashboard/classes")
+    if (!name || !level) {
+        return { error: "Le nom et le niveau sont obligatoires." }
+    }
+
+    await prisma.class.create({
+        data: { name, level, room, teacherId }
+    })
+    revalidatePath("/dashboard/classes")
+    return { success: true }
+  } catch (err) {
+    return { error: "Erreur lors de la création de la classe." }
+  }
 }
 
 export async function linkParentStudent(formData: FormData) {
-  const parentId = parseInt(formData.get("parentId") as string)
-  const studentId = parseInt(formData.get("studentId") as string)
+  try {
+    const parentId = parseInt(formData.get("parentId") as string)
+    const studentId = parseInt(formData.get("studentId") as string)
 
-  await prisma.student.update({
-    where: { id: studentId },
-    data: { parentId }
-  })
-  revalidatePath("/dashboard/link-accounts")
+    if (!parentId || !studentId) {
+        return { error: "Sélectionnez un parent et un élève." }
+    }
+
+    await prisma.student.update({
+        where: { id: studentId },
+        data: { parentId }
+    })
+    revalidatePath("/dashboard/link-accounts")
+    return { success: true }
+  } catch (err) {
+    return { error: "Échec de la liaison." }
+  }
 }
 
 export async function createStudent(formData: FormData) {
-  const name = formData.get("name") as string
-  const classId = parseInt(formData.get("classId") as string)
+  try {
+    const name = formData.get("name") as string
+    const classIdRaw = formData.get("classId") as string
+    const classId = classIdRaw ? parseInt(classIdRaw) : null
 
-  await prisma.student.create({
-    data: { name, classId }
-  })
-  revalidatePath("/dashboard/students")
+    if (!name || !classId) {
+        return { error: "Le nom et la classe sont obligatoires." }
+    }
+
+    const student = await prisma.student.create({
+        data: { name, classId }
+    })
+
+    revalidatePath("/dashboard/students")
+    return { success: true, studentId: student.id }
+  } catch (error) {
+    console.error("Error in createStudent:", error)
+    return { error: "Erreur lors de l'ajout de l'élève. Vérifiez les données." }
+  }
 }
 
 export async function deleteUser(id: number) {
   try {
-    // Delete related records first or handle via Prisma cascade if configured
-    // For now, let's just delete the user
     await prisma.user.delete({ where: { id } })
     revalidatePath("/dashboard/users")
     return { success: true }
@@ -109,18 +138,26 @@ export async function deleteClass(id: number) {
 }
 
 export async function updateCanteenMenu(formData: FormData) {
-  const dish = formData.get("dish") as string
-  const dessert = formData.get("dessert") as string
-  const dateStr = formData.get("date") as string
-  const date = new Date(dateStr)
+  try {
+    const dish = formData.get("dish") as string
+    const dessert = formData.get("dessert") as string
+    const dateStr = formData.get("date") as string
+    const date = new Date(dateStr)
 
-  await prisma.canteenMenu.upsert({
-    where: { date },
-    update: { dish, dessert },
-    create: { date, dish, dessert }
-  })
+    if (isNaN(date.getTime())) {
+        return { error: "Date invalide." }
+    }
 
-  revalidatePath("/dashboard/parent")
-  revalidatePath("/dashboard/canteen")
-  return { success: true }
+    await prisma.canteenMenu.upsert({
+        where: { date },
+        update: { dish, dessert },
+        create: { date, dish, dessert }
+    })
+
+    revalidatePath("/dashboard/parent")
+    revalidatePath("/dashboard/canteen")
+    return { success: true }
+  } catch (err) {
+    return { error: "Erreur menu cantine." }
+  }
 }
