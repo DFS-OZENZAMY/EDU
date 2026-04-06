@@ -2,9 +2,9 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, GraduationCap, Search, MoreHorizontal, Settings2, Trash2 } from "lucide-react"
+import { Plus, Users, GraduationCap, Search, MoreHorizontal, Settings2, Trash2, X } from "lucide-react"
 import { getAllClasses, getAdminUsers } from "@/actions/data"
-import { createClass } from "@/actions/admin"
+import { createClass, deleteClass } from "@/actions/admin"
 
 export default function ClassesPage() {
   const [classes, setClasses] = React.useState<any[]>([])
@@ -47,7 +47,7 @@ export default function ClassesPage() {
           <Card key={cls.id} className="p-5 hover:shadow-md transition-shadow border-gray-100">
             <div className="flex justify-between items-start mb-4">
               <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <GraduationCap className="h-6 w-6" />
+                < GraduationCap className="h-6 w-6" />
               </div>
               <button className="text-gray-400 hover:text-gray-600">
                 <MoreHorizontal className="h-5 w-5" />
@@ -73,13 +73,24 @@ export default function ClassesPage() {
 
             <div className="mt-5 grid grid-cols-2 gap-2">
                <Button variant="outline" size="sm" className="w-full text-xs">Modifier</Button>
-               <Button variant="outline" size="sm" className="w-full text-xs text-red-600 hover:text-red-700">Supprimer</Button>
+               <Button
+                 variant="outline"
+                 size="sm"
+                 className="w-full text-xs text-red-600 hover:text-red-700"
+                 onClick={async () => {
+                    if(confirm('Supprimer cette classe ?')) {
+                        await deleteClass(cls.id)
+                        fetchClasses()
+                    }
+                 }}
+               >
+                 Supprimer
+               </Button>
             </div>
           </Card>
         ))}
       </div>
 
-      {/* Classes Table View for detailed lists */}
       <Card className="mt-8 overflow-hidden border-gray-100">
         <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
            <h4 className="font-semibold text-gray-700">Liste détaillée des classes</h4>
@@ -111,7 +122,17 @@ export default function ClassesPage() {
                   <td className="px-6 py-4">
                      <div className="flex gap-2">
                         <button className="p-1.5 text-gray-400 hover:text-primary transition-colors"><Settings2 className="h-4 w-4" /></button>
-                        <button className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="h-4 w-4" /></button>
+                        <button
+                          className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={async () => {
+                            if(confirm('Supprimer cette classe ?')) {
+                                await deleteClass(cls.id)
+                                fetchClasses()
+                            }
+                          }}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
                      </div>
                   </td>
                 </tr>
@@ -121,12 +142,14 @@ export default function ClassesPage() {
         </div>
       </Card>
 
-      {/* Add Class Modal */}
       {showAddModal && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <form onSubmit={handleAddClass}>
               <Card className="w-full max-w-lg p-6 space-y-4">
-                 <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
+                 <div className="flex justify-between items-center border-b pb-4">
+                    <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
+                    <button type="button" onClick={() => setShowAddModal(false)}><X className="h-5 w-5" /></button>
+                 </div>
                  <div className="grid grid-cols-1 gap-4">
                     <div>
                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>

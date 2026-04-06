@@ -40,3 +40,28 @@ export async function linkParentStudent(formData: FormData) {
   })
   revalidatePath("/dashboard/link-accounts")
 }
+
+export async function createStudent(formData: FormData) {
+  const name = formData.get("name") as string
+  const classId = parseInt(formData.get("classId") as string)
+
+  await prisma.student.create({
+    data: { name, classId }
+  })
+  revalidatePath("/dashboard/students")
+}
+
+export async function deleteUser(id: number) {
+  await prisma.user.delete({ where: { id } })
+  revalidatePath("/dashboard/users")
+}
+
+export async function deleteStudent(id: number) {
+  await prisma.student.delete({ where: { id } })
+  revalidatePath("/dashboard/students")
+}
+
+export async function deleteClass(id: number) {
+  await prisma.class.delete({ where: { id } })
+  revalidatePath("/dashboard/classes")
+}

@@ -2,9 +2,9 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Users, UserPlus, Link as LinkIcon, Search, MoreHorizontal } from "lucide-react"
+import { Users, UserPlus, Link as LinkIcon, Search, MoreHorizontal, Trash2 } from "lucide-react"
 import { getAdminUsers } from "@/actions/data"
-import { createUser } from "@/actions/admin"
+import { createUser, deleteUser } from "@/actions/admin"
 
 export default function UsersPage() {
   const [users, setUsers] = React.useState<any[]>([])
@@ -127,9 +127,19 @@ export default function UsersPage() {
                     <span className="text-sm text-gray-700">{user.status}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                              if(confirm('Supprimer cet utilisateur ?')) {
+                                  await deleteUser(user.id)
+                                  getAdminUsers().then(setUsers)
+                              }
+                          }}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    </div>
                   </td>
                 </tr>
               ))}

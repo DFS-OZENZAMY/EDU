@@ -1,15 +1,52 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Search, Plus, Filter, MoreVertical, Download } from "lucide-react"
-import { getAllStudents } from "@/actions/data"
+import { Search, Plus, Filter, MoreVertical, Download, Trash2, X } from "lucide-react"
+import { getAllStudents, getAllClasses } from "@/actions/data"
+import { createStudent, deleteStudent } from "@/actions/admin"
 
 export default function StudentsPage() {
   const [students, setStudents] = React.useState<any[]>([])
+  const [classes, setClasses] = React.useState<any[]>([])
+  const [showAddModal, setShowAddModal] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
 
   React.useEffect(() => {
-    getAllStudents().then(setStudents)
+    fetchData()
   }, [])
+
+  const fetchData = async () => {
+    const s = await getAllStudents()
+    const c = await getAllClasses()
+    setStudents(s)
+    setClasses(c)
+  }
+
+  const handleAddStudent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    await createStudent(formData)
+    setShowAddModal(false)
+    fetchData()
+    setIsLoading(false)
+  }
+
+  const exportToCSV = () => {
+    const headers = ["ID", "Nom", "Classe", "Niveau"]
+    const rows = students.map(s => [s.id, s.name, s.class?.name || 'N/A', s.class?.level || 'N/A'])
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n")
+
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", "liste_eleves_edu.csv")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -22,11 +59,17 @@ export default function StudentsPage() {
            />
         </div>
         <div className="flex gap-4 w-full sm:w-auto">
-           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors">
+           <button
+             onClick={exportToCSV}
+             className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+           >
               <Download className="h-4 w-4" />
               Exporter CSV
            </button>
-           <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary px-6 py-2 rounded-xl text-white text-sm font-bold shadow-lg hover:shadow-xl transition-all">
+           <button
+             onClick={() => setShowAddModal(true)}
+             className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary px-6 py-2 rounded-xl text-white text-sm font-bold shadow-lg hover:shadow-xl transition-all"
+           >
               <Plus className="h-4 w-4" />
               Ajouter un élève
            </button>
@@ -71,9 +114,19 @@ export default function StudentsPage() {
                            </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                           <button className="text-gray-400 hover:text-gray-600">
-                              <MoreVertical className="h-5 w-5" />
-                           </button>
+                           <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={async () => {
+                                    if(confirm('Supprimer cet élève ?')) {
+                                        await deleteStudent(student.id)
+                                        fetchData()
+                                    }
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                              >
+                                 <Trash2 className="h-4 w-4" />
+                              </button>
+                           </div>
                         </td>
                      </tr>
                   ))}
@@ -81,13 +134,41 @@ export default function StudentsPage() {
             </table>
          </div>
          <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/30">
-            <p className="text-xs text-gray-500">Affichage de {students.length} sur 342 élèves</p>
-            <div className="flex gap-2">
-               <button className="px-3 py-1 text-xs border rounded-lg bg-white text-gray-600 hover:bg-gray-50">Précédent</button>
-               <button className="px-3 py-1 text-xs border rounded-lg bg-white text-gray-600 hover:bg-gray-50">Suivant</button>
-            </div>
+            <p className="text-xs text-gray-500">Total: {students.length} élèves inscrits</p>
          </div>
       </Card>
+
+      {showAddModal && (
+         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <form onSubmit={handleAddStudent}>
+              <Card className="w-full max-w-md p-6 space-y-4">
+                 <div className="flex justify-between items-center border-b pb-4">
+                    <h3 className="text-xl font-bold">Ajouter un élève</h3>
+                    <button type="button" onClick={() => setShowAddModal(false)}><X className="h-5 w-5" /></button>
+                 </div>
+                 <div className="space-y-4">
+                    <div>
+                       <label className="block text-sm font-medium mb-1">Nom Complet</label>
+                       <input name="name" required type="text" className="w-full px-4 py-2 border rounded-lg" placeholder="ex: Amine Tahiri" />
+                    </div>
+                    <div>
+                       <label className="block text-sm font-medium mb-1">Classe</label>
+                       <select name="classId" required className="w-full px-4 py-2 border rounded-lg">
+                          <option value="">Choisir une classe...</option>
+                          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                       </select>
+                    </div>
+                 </div>
+                 <div className="flex justify-end gap-3 pt-4">
+                    <button type="button" className="px-4 py-2 text-sm border rounded-lg" onClick={() => setShowAddModal(false)}>Annuler</button>
+                    <button type="submit" disabled={isLoading} className="px-6 py-2 text-sm bg-primary text-white rounded-lg font-bold shadow-md">
+                       {isLoading ? "Enregistrement..." : "Confirmer l'ajout"}
+                    </button>
+                 </div>
+              </Card>
+            </form>
+         </div>
+      )}
     </div>
   )
 }
