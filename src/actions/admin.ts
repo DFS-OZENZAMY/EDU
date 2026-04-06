@@ -5,17 +5,42 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 
 export async function createUser(formData: FormData) {
-  const name = formData.get("name") as string
-  const email = formData.get("email") as string
-  const role = formData.get("role") as string
-  const password = formData.get("password") as string || "password123"
+  try {
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+    const role = formData.get("role") as string
+    const password = formData.get("password") as string || "password123"
 
-  const hashedPassword = await bcrypt.hash(password, 10)
+    if (!name || !email || !role) {
+        return { error: "Veuillez remplir tous les champs obligatoires." }
+    }
 
-  await prisma.user.create({
-    data: { name, email, role, password: hashedPassword }
-  })
-  revalidatePath("/dashboard/users")
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+        return { error: "Cet email est déjà utilisé." }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await prisma.user.create({
+        data: { name, email, role, password: hashedPassword }
+    })
+
+    await prisma.notification.create({
+        data: {
+            userId: user.id,
+            title: "Bienvenue !",
+            message: "Votre compte a été créé avec succès par l'administration.",
+            type: "SUCCESS"
+        }
+    })
+
+    revalidatePath("/dashboard/users")
+    return { success: true }
+  } catch (error) {
+    console.error("Error in createUser:", error)
+    return { error: "Une erreur interne est survenue." }
+  }
 }
 
 export async function createClass(formData: FormData) {
@@ -52,16 +77,33 @@ export async function createStudent(formData: FormData) {
 }
 
 export async function deleteUser(id: number) {
-  await prisma.user.delete({ where: { id } })
-  revalidatePath("/dashboard/users")
+  try {
+    // Delete related records first or handle via Prisma cascade if configured
+    // For now, let's just delete the user
+    await prisma.user.delete({ where: { id } })
+    revalidatePath("/dashboard/users")
+    return { success: true }
+  } catch (error) {
+    return { error: "Impossible de supprimer l'utilisateur." }
+  }
 }
 
 export async function deleteStudent(id: number) {
-  await prisma.student.delete({ where: { id } })
-  revalidatePath("/dashboard/students")
+  try {
+    await prisma.student.delete({ where: { id } })
+    revalidatePath("/dashboard/students")
+    return { success: true }
+  } catch (error) {
+    return { error: "Impossible de supprimer l'élève." }
+  }
 }
 
 export async function deleteClass(id: number) {
-  await prisma.class.delete({ where: { id } })
-  revalidatePath("/dashboard/classes")
+  try {
+    await prisma.class.delete({ where: { id } })
+    revalidatePath("/dashboard/classes")
+    return { success: true }
+  } catch (error) {
+    return { error: "Impossible de supprimer la classe." }
+  }
 }

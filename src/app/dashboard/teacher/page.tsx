@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2 } from "lucide-react"
+import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2, Bell } from "lucide-react"
 import { getMyData } from "@/actions/data"
 import { clockIn } from "@/actions/teacher"
 
@@ -9,11 +9,14 @@ export default function TeacherDashboardPage() {
   const [hasStartedDay, setHasStartedDay] = React.useState(false)
   const [startTime, setStartTime] = React.useState<string | null>(null)
   const [classes, setClasses] = React.useState<any[]>([])
+  const [notifications, setNotifications] = React.useState<any[]>([])
 
   React.useEffect(() => {
-    getMyData().then((data: any) => {
-        if (Array.isArray(data)) {
+    getMyData().then((res: any) => {
+        if (res?.classes) {
+            const data = res.classes
             setClasses(data)
+            setNotifications(res.notifications || [])
             // Check if already clocked in today
             const teacher = data[0]?.teacher
             if (teacher?.clockIns?.length > 0) {
@@ -129,18 +132,21 @@ export default function TeacherDashboardPage() {
 
          <div className="space-y-8">
             <Card className="p-6">
-               <h3 className="font-bold text-gray-900 text-lg mb-6">Messages Urgents</h3>
+               <h3 className="font-bold text-gray-900 text-lg mb-6">Notifications</h3>
                <div className="space-y-4">
-                  {[1, 2].map(i => (
-                     <div key={i} className="p-3 rounded-lg bg-orange-50 border border-orange-100">
-                        <div className="flex items-center gap-2 mb-2">
-                           <div className="h-6 w-6 rounded-full bg-orange-200" />
-                           <p className="text-xs font-bold text-gray-900 italic">Mme Bennani (Parent)</p>
+                  {notifications.map((notif, i) => (
+                     <div key={i} className="p-3 rounded-xl bg-orange-50 border border-orange-100 flex gap-3">
+                        <Bell className="h-4 w-4 text-orange-600 shrink-0" />
+                        <div>
+                            <p className="text-xs font-bold text-gray-900 leading-none mb-1">{notif.title}</p>
+                            <p className="text-[11px] text-gray-700 leading-tight">{notif.message}</p>
+                            <p className="text-[10px] text-orange-600 mt-2 font-medium">{new Date(notif.createdAt).toLocaleTimeString()}</p>
                         </div>
-                        <p className="text-xs text-gray-700 leading-tight">Bonjour M. Alaoui, mon fils Youssef sera absent demain pour rendez-vous médical.</p>
-                        <p className="text-[10px] text-orange-600 mt-2 font-medium">Il y a 45 min • Répondre</p>
                      </div>
                   ))}
+                  {notifications.length === 0 && (
+                    <p className="text-center text-gray-400 text-xs italic py-4">Aucune notification.</p>
+                  )}
                </div>
             </Card>
 

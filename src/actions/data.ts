@@ -66,8 +66,14 @@ export async function getMyData() {
   if (!userId) return null
   const id = parseInt(userId)
 
+  const notifications = await prisma.notification.findMany({
+    where: { userId: id },
+    orderBy: { createdAt: 'desc' },
+    take: 5
+  })
+
   if (userRole === 'PARENT') {
-    return await prisma.student.findMany({
+    const students = await prisma.student.findMany({
       where: { parentId: id },
       include: {
         class: { include: { teacher: true } },
@@ -80,10 +86,11 @@ export async function getMyData() {
         }
       }
     })
+    return { students, notifications }
   }
 
   if (userRole === 'TEACHER') {
-    return await prisma.class.findMany({
+    const classes = await prisma.class.findMany({
       where: { teacherId: id },
       include: {
         lessonLogs: {
@@ -111,6 +118,11 @@ export async function getMyData() {
         }
       }
     })
+    return { classes, notifications }
+  }
+
+  if (userRole === 'ADMIN') {
+    return { notifications }
   }
 
   return null

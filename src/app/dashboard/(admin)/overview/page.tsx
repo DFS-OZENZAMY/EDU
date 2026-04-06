@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, GraduationCap, Calendar, BarChart3, TrendingUp, AlertTriangle } from "lucide-react"
+import { Users, GraduationCap, Calendar, BarChart3, TrendingUp, AlertTriangle, Bell } from "lucide-react"
 import { getAdminUsers, getAllStudents, getAllClasses } from "@/actions/data"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
@@ -9,11 +9,27 @@ export default function DashboardPage() {
   const [users, setUsers] = React.useState<any[]>([])
   const [students, setStudents] = React.useState<any[]>([])
   const [classes, setClasses] = React.useState<any[]>([])
+  const [notifications, setNotifications] = React.useState<any[]>([])
 
   React.useEffect(() => {
     getAdminUsers().then(setUsers)
     getAllStudents().then(setStudents)
     getAllClasses().then(setClasses)
+    // For admin, we could add specific fetch but let's assume getSession or specific action
+    import("@/actions/data").then(m => {
+        m.getMyData().then((res: any) => {
+            if (res?.notifications) setNotifications(res.notifications)
+        })
+    })
+    // Auto-refresh notifications every 30s
+    const interval = setInterval(() => {
+        import("@/actions/data").then(m => {
+            m.getMyData().then((res: any) => {
+                if (res?.notifications) setNotifications(res.notifications)
+            })
+        })
+    }, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const stats = [
@@ -109,20 +125,25 @@ export default function DashboardPage() {
 
          {/* Recent Activity */}
          <Card className="p-6">
-            <h3 className="font-bold text-gray-900 text-lg mb-6">Activités récentes</h3>
+            <h3 className="font-bold text-gray-900 text-lg mb-6">Notifications & Alertes</h3>
             <div className="space-y-6">
-               {[1, 2, 3, 4].map(i => (
+               {notifications.map((notif, i) => (
                   <div key={i} className="flex gap-4">
-                     <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                        <Users className="h-5 w-5 text-gray-400" />
+                     <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                        <Bell className="h-5 w-5 text-primary" />
                      </div>
                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900">Nouvel élève inscrit</p>
-                        <p className="text-xs text-gray-500 truncate">Youssef Bennani - CP-B</p>
-                        <p className="text-[10px] text-gray-400 mt-1">Il y a 2 heures</p>
+                        <p className="text-sm font-bold text-gray-900">{notif.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{notif.message}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleTimeString()}</p>
                      </div>
                   </div>
                ))}
+               {notifications.length === 0 && (
+                <div className="text-center py-10">
+                    <p className="text-gray-400 text-xs italic">Aucune activité récente.</p>
+                </div>
+               )}
             </div>
             <button className="w-full mt-6 py-2 text-primary text-sm font-bold hover:bg-blue-50 rounded-lg transition-colors border border-primary/10">
                Voir tout l'historique

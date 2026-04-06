@@ -7,9 +7,14 @@ import { getMyData } from "@/actions/data"
 export default function ParentDashboardPage() {
   const [data, setData] = React.useState<any[]>([])
 
+  const [notifications, setNotifications] = React.useState<any[]>([])
+
   React.useEffect(() => {
     getMyData().then((res: any) => {
-        if (Array.isArray(res)) setData(res)
+        if (res?.students) {
+            setData(res.students)
+            setNotifications(res.notifications || [])
+        }
     })
   }, [])
 
@@ -110,18 +115,20 @@ export default function ParentDashboardPage() {
             <Card className="p-6">
                <h3 className="font-bold text-gray-900 text-lg mb-6">Notifications</h3>
                <div className="space-y-4">
-                  {[
-                     { text: "Réunion parents-profs ce Vendredi à 17h.", type: "urgent" },
-                     { text: "Excursion scolaire prévue pour le 25 Mai.", type: "info" },
-                     { text: "Nouveau cahier de texte disponible (Français).", type: "update" },
-                  ].map((notif, i) => (
+                  {notifications.map((notif, i) => (
                      <div key={i} className={`p-4 rounded-xl flex gap-3 ${
-                        notif.type === "urgent" ? "bg-red-50 text-red-700 border border-red-100" : "bg-gray-50 text-gray-700 border border-gray-100"
+                        notif.type === "ERROR" ? "bg-red-50 text-red-700 border border-red-100" : "bg-gray-50 text-gray-700 border border-gray-100"
                      }`}>
                         <Bell className="h-5 w-5 shrink-0" />
-                        <p className="text-xs font-medium leading-relaxed">{notif.text}</p>
+                        <div>
+                            <p className="text-xs font-bold leading-none mb-1">{notif.title}</p>
+                            <p className="text-[11px] font-medium leading-relaxed">{notif.message}</p>
+                        </div>
                      </div>
                   ))}
+                  {notifications.length === 0 && (
+                    <p className="text-center text-gray-400 text-xs italic py-4">Aucune nouvelle notification.</p>
+                  )}
                </div>
             </Card>
 

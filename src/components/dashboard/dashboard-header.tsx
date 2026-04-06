@@ -21,13 +21,26 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ user, navigation, roleLabel, roleColor = "bg-primary" }: DashboardHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
   const [isProfileOpen, setIsProfileOpen] = React.useState(false)
+  const [isNotifOpen, setIsNotifOpen] = React.useState(false)
+  const [notifications, setNotifications] = React.useState<any[]>([])
   const pathname = usePathname()
   const dropdownRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (user?.id) {
+        import("@/actions/data").then(m => {
+            m.getMyData().then((res: any) => {
+                if (res?.notifications) setNotifications(res.notifications)
+            })
+        })
+    }
+  }, [user])
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileOpen(false)
+        setIsNotifOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -48,15 +61,43 @@ export function DashboardHeader({ user, navigation, roleLabel, roleColor = "bg-p
         </h1>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-6">
-        <button className="text-gray-500 hover:text-primary relative p-2">
-          <Bell className="h-5 w-5 md:h-6 md:w-6" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
-        </button>
+      <div className="flex items-center gap-3 md:gap-6" ref={dropdownRef}>
+        <div className="relative">
+            <button
+                onClick={() => { setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); }}
+                className="text-gray-500 hover:text-primary relative p-2 rounded-full hover:bg-gray-50"
+            >
+                <Bell className="h-5 w-5 md:h-6 md:w-6" />
+                {notifications.some(n => !n.isRead) && (
+                    <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border-2 border-white" />
+                )}
+            </button>
 
-        <div className="relative" ref={dropdownRef}>
+            {isNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in duration-150">
+                    <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
+                        <p className="text-xs font-black uppercase text-gray-400">Notifications</p>
+                        <button className="text-[10px] text-primary font-bold hover:underline">Tout marquer comme lu</button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                        {notifications.map((n) => (
+                            <div key={n.id} className="px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <p className="text-xs font-bold text-gray-900 mb-0.5">{n.title}</p>
+                                <p className="text-[11px] text-gray-500 leading-tight">{n.message}</p>
+                                <p className="text-[9px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                            </div>
+                        ))}
+                        {notifications.length === 0 && (
+                            <p className="p-8 text-center text-gray-400 text-xs italic">Aucune notification.</p>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+
+        <div className="relative">
           <button
-            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
             className="flex items-center gap-3 p-1 rounded-full hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
           >
             <div className="text-right hidden sm:block">

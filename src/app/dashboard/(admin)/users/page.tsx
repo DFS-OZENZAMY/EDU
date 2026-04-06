@@ -42,9 +42,19 @@ export default function UsersPage() {
   const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    await createUser(formData)
-    setShowCreateForm(false)
-    getAdminUsers().then(setUsers)
+    try {
+        const result = await createUser(formData)
+        if (result?.error) {
+            alert(result.error)
+        } else {
+            setShowCreateForm(false)
+            const updatedUsers = await getAdminUsers()
+            setUsers(updatedUsers)
+            alert("Compte créé avec succès !")
+        }
+    } catch (err) {
+        alert("Une erreur inattendue est survenue.")
+    }
   }
 
   return (

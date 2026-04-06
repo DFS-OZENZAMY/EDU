@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BookOpen, Plus, Calendar, Save, Trash2, Clock, MapPin } from "lucide-react"
 import { getMyData } from "@/actions/data"
-import { createLessonLog } from "@/actions/teacher"
+import { createLessonLog, deleteLessonLog } from "@/actions/teacher"
 
 export default function CahierTextePage() {
   const [classes, setClasses] = React.useState<any[]>([])
@@ -85,7 +85,17 @@ export default function CahierTextePage() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end gap-3">
                      <button className="text-xs font-bold text-gray-400 hover:text-gray-600">Modifier</button>
-                     <button className="text-xs font-bold text-red-400 hover:text-red-600">Supprimer</button>
+                     <button
+                       onClick={async () => {
+                         if(confirm('Supprimer cette séance ?')) {
+                            await deleteLessonLog(log.id)
+                            fetchData()
+                         }
+                       }}
+                       className="text-xs font-bold text-red-400 hover:text-red-600"
+                     >
+                        Supprimer
+                     </button>
                   </div>
                </Card>
             ))}
