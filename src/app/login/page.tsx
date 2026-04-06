@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { GraduationCap, Mail, Lock, Loader2 } from "lucide-react"
+import { login } from "@/actions/auth"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -25,9 +26,6 @@ export default function LoginPage() {
     formData.append("role", role)
 
     try {
-      // In a real Server Action, you'd import and call it directly.
-      // But we can also use a dynamic import or fetch for demonstration.
-      const { login } = await import("@/actions/auth")
       const result = await login(formData)
       if (result?.error) setError(result.error)
     } catch (err) {
