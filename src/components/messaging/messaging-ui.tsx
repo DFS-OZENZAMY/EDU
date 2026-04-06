@@ -19,6 +19,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
   const [allUsers, setAllUsers] = React.useState<any[]>([])
   const [currentUser, setCurrentUser] = React.useState<any>(null)
   const [newMessage, setNewMessage] = React.useState("")
+  const [mobileShowChat, setMobileShowChat] = React.useState(false)
 
   React.useEffect(() => {
     getSession().then(setCurrentUser)
@@ -51,10 +52,15 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
     (u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  const handleSelectConv = (conv: any) => {
+    setSelectedConv(conv)
+    setMobileShowChat(true)
+  }
+
   return (
-    <div className="h-[calc(100vh-12rem)] flex gap-6">
+    <div className="h-[calc(100vh-14rem)] md:h-[calc(100vh-12rem)] flex gap-6 relative">
       {/* Contact List */}
-      <Card className="w-80 flex flex-col overflow-hidden border-gray-100 shadow-sm">
+      <Card className={`w-full md:w-80 flex flex-col overflow-hidden border-gray-100 shadow-sm ${mobileShowChat ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b bg-gray-50/30">
            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -74,7 +80,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                  key={u.id}
                  onClick={() => {
                     const existing = conversations.find(c => c.user.id === u.id)
-                    setSelectedConv(existing || { user: u, messages: [] })
+                    handleSelectConv(existing || { user: u, messages: [] })
                     setSearchTerm("")
                  }}
                  className="p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors"
@@ -87,7 +93,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
              conversations.map((conv) => (
                 <div
                   key={conv.user.id}
-                  onClick={() => setSelectedConv(conv)}
+                  onClick={() => handleSelectConv(conv)}
                   className={`p-4 border-b cursor-pointer transition-colors ${selectedConv?.user.id === conv.user.id ? primaryColorClass.replace('bg-', 'bg-') + '/10 border-r-4 border-r-' + primaryColorClass.replace('bg-', '') : 'hover:bg-gray-50'}`}
                 >
                    <div className="flex justify-between items-start mb-1">
@@ -109,11 +115,17 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
       </Card>
 
       {/* Chat Area */}
-      <Card className="flex-1 flex flex-col overflow-hidden border-gray-100">
+      <Card className={`flex-1 flex flex-col overflow-hidden border-gray-100 ${mobileShowChat ? 'flex' : 'hidden md:flex'}`}>
         {selectedConv ? (
             <>
                 <div className="p-4 border-b bg-gray-50/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setMobileShowChat(false)}
+                            className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                        </button>
                         <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold ${primaryColorClass}`}>
                             {selectedConv.user.name.charAt(0)}
                         </div>
@@ -124,10 +136,10 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                     </div>
                 </div>
 
-                <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50/30 flex flex-col">
+                <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 bg-slate-50/30 flex flex-col">
                     {selectedConv.messages.map((msg: any) => (
                         <div key={msg.id} className={`flex ${msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-3 rounded-2xl max-w-md shadow-sm border ${
+                            <div className={`p-3 rounded-2xl max-w-[85%] md:max-w-md shadow-sm border ${
                                 msg.senderId === currentUser?.id
                                 ? `${primaryColorClass} text-white rounded-tr-none`
                                 : 'bg-white text-gray-800 border-gray-100 rounded-tl-none'
@@ -149,7 +161,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                       <input
                         type="text"
                         placeholder="Écrivez votre message..."
-                        className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                        className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -157,6 +169,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                       <Button
                         onClick={handleSend}
                         disabled={!newMessage.trim() || !selectedConv}
+                        variant="primary"
                         className={`${primaryColorClass} hover:opacity-90 h-10 w-10 p-0 rounded-xl`}
                       >
                          <Send className="h-4 w-4" />
@@ -165,7 +178,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                 </div>
             </>
         ) : (
-            <div className="flex-1 flex items-center justify-center bg-slate-50/30 text-gray-400 italic text-sm">
+            <div className="flex-1 flex items-center justify-center bg-slate-50/30 text-gray-400 italic text-sm p-8 text-center">
                 Sélectionnez une conversation pour commencer
             </div>
         )}
