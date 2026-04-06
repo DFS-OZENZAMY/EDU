@@ -23,6 +23,7 @@ model User {
   messagesReceived Message[] @relation("ReceivedMessages")
   clockIns       ClockIn[]
   fees           Fee[]
+  lessonLogs     LessonLog[]
 }
 
 model ClockIn {
@@ -61,6 +62,7 @@ model Class {
   teacherId Int?
   teacher   User?    @relation("TeacherToClass", fields: [teacherId], references: [id])
   students  Student[]
+  lessonLogs LessonLog[]
 }
 
 model Grade {
@@ -79,6 +81,19 @@ model Attendance {
   student   Student  @relation(fields: [studentId], references: [id])
   status    String   // "PRESENT", "LATE", "ABSENT"
   date      DateTime @default(now())
+}
+
+model LessonLog {
+  id          Int      @id @default(autoincrement())
+  classId     Int
+  class       Class    @relation(fields: [classId], references: [id])
+  teacherId   Int
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  subject     String
+  content     String   // Lesson details
+  homework    String?  // Homework assigned
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model Message {

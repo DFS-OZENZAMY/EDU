@@ -86,6 +86,10 @@ export async function getMyData() {
     return await prisma.class.findMany({
       where: { teacherId: id },
       include: {
+        lessonLogs: {
+            orderBy: { createdAt: 'desc' },
+            include: { class: true }
+        },
         students: {
             include: {
                 attendance: { orderBy: { date: 'desc' }, take: 1 },

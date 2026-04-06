@@ -49,3 +49,27 @@ export async function sendMessage(formData: FormData) {
   revalidatePath("/dashboard/teacher/messages")
   revalidatePath("/dashboard/parent/messages")
 }
+
+export async function createLessonLog(formData: FormData) {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get("userId")?.value
+  if (!userId) return { error: "Non authentifié" }
+
+  const classId = parseInt(formData.get("classId") as string)
+  const subject = formData.get("subject") as string
+  const content = formData.get("content") as string
+  const homework = formData.get("homework") as string
+
+  await prisma.lessonLog.create({
+    data: {
+      classId,
+      teacherId: parseInt(userId),
+      subject,
+      content,
+      homework
+    }
+  })
+
+  revalidatePath("/dashboard/teacher/cahier-texte")
+  return { success: true }
+}
