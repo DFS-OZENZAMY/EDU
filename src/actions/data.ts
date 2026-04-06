@@ -8,7 +8,9 @@ export async function getAdminUsers() {
   return await prisma.user.findMany({
     include: {
         fees: true,
-        parentStudents: true,
+        parentStudents: {
+            include: { class: true }
+        },
         teacherClasses: true
     },
     orderBy: { createdAt: 'desc' }
@@ -44,6 +46,42 @@ export async function getAllStudents() {
       grades: true
     }
   })
+}
+
+export async function getConversations() {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get("userId")?.value
+  if (!userId) return []
+  const id = parseInt(userId)
+
+  const messages = await prisma.message.findMany({
+    where: {
+      OR: [
+        { senderId: id },
+        { receiverId: id }
+      ]
+    },
+    include: {
+      sender: true,
+      receiver: true
+    },
+    orderBy: { createdAt: 'asc' }
+  })
+
+  // Group messages by the other user
+  const conversationsMap = new Map()
+  messages.forEach(msg => {
+    const otherUser = msg.senderId === id ? msg.receiver : msg.sender
+    if (!conversationsMap.has(otherUser.id)) {
+        conversationsMap.set(otherUser.id, {
+            user: otherUser,
+            messages: []
+        })
+    }
+    conversationsMap.get(otherUser.id).messages.push(msg)
+  })
+
+  return Array.from(conversationsMap.values())
 }
 
 export async function getMyData() {
