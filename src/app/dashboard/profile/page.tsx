@@ -1,9 +1,9 @@
-import { getSession } from "@/actions/auth"
+import { getSessionUser } from "@/actions/auth"
 import { Card } from "@/components/ui/card"
 import { User, Mail, Shield, Calendar } from "lucide-react"
 
 export default async function ProfilePage() {
-  const user = await getSession()
+  const user = await getSessionUser()
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

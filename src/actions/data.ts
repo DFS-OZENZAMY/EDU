@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { getSession } from "@/lib/auth"
 
 export async function getAdminUsers() {
   return await prisma.user.findMany({
@@ -49,10 +50,9 @@ export async function getAllStudents() {
 }
 
 export async function getConversations() {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("userId")?.value
-  if (!userId) return []
-  const id = parseInt(userId)
+  const session = await getSession()
+  if (!session) return []
+  const id = session.userId
 
   const messages = await prisma.message.findMany({
     where: {
@@ -85,12 +85,11 @@ export async function getConversations() {
 }
 
 export async function getMyData() {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("userId")?.value
-  const userRole = cookieStore.get("userRole")?.value
+  const session = await getSession()
+  if (!session) return null
 
-  if (!userId) return null
-  const id = parseInt(userId)
+  const id = session.userId
+  const userRole = session.role
 
   const notifications = await prisma.notification.findMany({
     where: { userId: id },
@@ -183,12 +182,11 @@ export async function getMyData() {
 }
 
 export async function markNotificationsAsRead() {
-  const cookieStore = await cookies()
-  const userId = cookieStore.get("userId")?.value
-  if (!userId) return
+  const session = await getSession()
+  if (!session) return
 
   await prisma.notification.updateMany({
-    where: { userId: parseInt(userId), isRead: false },
+    where: { userId: session.userId, isRead: false },
     data: { isRead: true }
   })
   revalidatePath("/dashboard")

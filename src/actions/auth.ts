@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import bcrypt from "bcryptjs"
+import { encrypt } from "@/lib/auth"
 
 export async function login(formData: FormData) {
   const email = formData.get("email") as string
@@ -23,10 +24,12 @@ export async function login(formData: FormData) {
     return { error: "Identifiants invalides" }
   }
 
-  // Set a simple cookie for current user ID (Prototype session)
+  // Set a secure JWT session cookie
+  const expires = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
+  const session = await encrypt({ userId: user.id, role: user.role, expires });
+
   const cookieStore = await cookies()
-  cookieStore.set("userId", user.id.toString(), { path: "/", httpOnly: true, secure: true })
-  cookieStore.set("userRole", user.role, { path: "/", httpOnly: true, secure: true })
+  cookieStore.set("session", session, { expires, httpOnly: true, secure: true, path: '/' });
 
   if (user.role === "ADMIN") redirect("/dashboard/overview")
   if (user.role === "TEACHER") redirect("/dashboard/teacher")
@@ -35,8 +38,7 @@ export async function login(formData: FormData) {
 
 export async function logout() {
   const cookieStore = await cookies()
-  cookieStore.delete("userId")
-  cookieStore.delete("userRole")
+  cookieStore.delete("session")
   redirect("/login")
 }
 
@@ -65,20 +67,30 @@ export async function register(formData: FormData) {
     },
   })
 
+  const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
+  const session = await encrypt({ userId: user.id, role: user.role, expires });
+
   const cookieStore = await cookies()
-  cookieStore.set("userId", user.id.toString(), { path: "/", httpOnly: true, secure: true })
-  cookieStore.set("userRole", user.role, { path: "/", httpOnly: true, secure: true })
+  cookieStore.set("session", session, { expires, httpOnly: true, secure: true, path: '/' });
 
   redirect("/dashboard/overview")
 }
 
-export async function getSession() {
+export async function getSessionUser() {
   const cookieStore = await cookies()
-  const userId = cookieStore.get("userId")?.value
-  if (!userId) return null
+  const session = cookieStore.get("session")?.value
+  if (!session) return null
 
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(userId) }
-  })
-  return user
+  try {
+    const { decrypt } = await import("@/lib/auth")
+    const payload = await decrypt(session)
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId }
+    })
+    if (!user) return null
+    const { password, ...userWithoutPassword } = user
+    return userWithoutPassword
+  } catch (error) {
+    return null
+  }
 }

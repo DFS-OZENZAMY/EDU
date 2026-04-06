@@ -3,14 +3,14 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Wallet, CreditCard, Receipt, TrendingUp, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSession } from "@/actions/auth"
+import { getSessionUser } from "@/actions/auth"
 import { prisma } from "@/lib/prisma"
 
 export default function ParentFinancePage() {
   const [fees, setFees] = React.useState<any[]>([])
 
   React.useEffect(() => {
-    getSession().then(async (user: any) => {
+    getSessionUser().then(async (user: any) => {
         if (user) {
             const res = await prisma.fee.findMany({
                 where: { parentId: user.id },

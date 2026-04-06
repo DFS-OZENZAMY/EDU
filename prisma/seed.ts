@@ -20,7 +20,7 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 10)
   const adminPassword = await bcrypt.hash('admin123', 10)
 
-  await prisma.user.create({
+  const adminUser = await prisma.user.create({
     data: {
       email: 'admin@edu.ma',
       password: adminPassword,
@@ -31,18 +31,18 @@ async function main() {
 
   const teacher1 = await prisma.user.create({
     data: {
-      email: 'teacher1@edu.ma',
+      email: 'salma@edu.ma', // Consistent with README
       password: hashedPassword,
-      name: 'Ahmed Alaoui',
+      name: 'Salma Bennani',
       role: 'TEACHER',
     },
   })
 
   const teacher2 = await prisma.user.create({
     data: {
-      email: 'teacher2@edu.ma',
+      email: 'ahmed@edu.ma',
       password: hashedPassword,
-      name: 'Salma Bennani',
+      name: 'Ahmed Alaoui',
       role: 'TEACHER',
     },
   })

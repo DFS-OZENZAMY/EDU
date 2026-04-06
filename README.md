@@ -1,59 +1,57 @@
-# EDU Clone - Gestion Scolaire au Maroc
+# EDU - Solution de Gestion Scolaire (Maroc)
 
-Ce projet est un clone de la landing page de [EDU](https://minassa.ma/), une solution de gestion scolaire spécifiquement conçue pour le marché marocain.
+Solution complète de gestion scolaire inspirée par [Minassa](https://minassa.ma/), optimisée pour le marché marocain.
 
-## Technologies utilisées
+## Fonctionnalités Clés
 
-- **Next.js** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **Lucide React** (Icones)
-- **Framer Motion** (Animations)
+- **Tableaux de bord multi-rôles :** Admin, Enseignants, Parents.
+- **Gestion des Élèves & Classes :** Inscriptions, affectations, export CSV.
+- **Cahier de Texte Digital :** Suivi des leçons et devoirs en temps réel.
+- **Système de Notation :** Saisie des notes par les professeurs, consultation par les parents.
+- **Pointage & Présences :** Pointage des enseignants (Clock-in) et présence des élèves.
+- **Messagerie Interne :** Communication fluide entre l'administration, les profs et les parents.
+- **Notifications :** Alertes en temps réel pour les notes, absences et messages.
+- **Cantine & Finances :** Gestion des menus et suivi des paiements des frais de scolarité.
+
+## Technologies Utilisées
+
+- **Frontend :** Next.js 15 (App Router), Tailwind CSS, Framer Motion, Lucide React, Recharts.
+- **Backend/Base de données :** Prisma ORM, PostgreSQL (Compatible Supabase/Neon/Vercel Postgres).
+- **Sécurité :** Authentification JWT sécurisée (HttpOnly Cookies), Hachage Bcryptjs.
 
 ## Déploiement sur Vercel
 
-Pour déployer ce projet sur Vercel, suivez ces étapes :
+1. **Base de données :** Créez une instance PostgreSQL (ex: [Supabase](https://supabase.com/) ou [Neon](https://neon.tech/)).
+2. **Configuration Vercel :**
+   - Connectez votre dépôt à Vercel.
+   - Ajoutez les variables d'environnement suivantes dans les paramètres du projet :
+     - `DATABASE_URL` : Votre URL de connexion PostgreSQL.
+     - `DIRECT_URL` : Votre URL directe PostgreSQL.
+     - `JWT_SECRET` : Une chaîne aléatoire longue et sécurisée.
+3. **Build :** Le déploiement lancera automatiquement `prisma generate` via le script `postinstall`.
 
-1. Connectez votre dépôt GitHub à Vercel.
-2. Dans les paramètres du projet (**Project Settings**) :
-   - **Framework Preset** : Choisissez `Next.js`.
-   - **Root Directory** : Laissez vide (ou `./` si demandé) car le projet est à la racine.
-   - **Build Command** : `npm run build`
-   - **Install Command** : `npm install`
-   - **Output Directory** : `.next` (par défaut pour Next.js)
-
-Le fichier `vercel.json` à la racine configure automatiquement ces paramètres.
-
-## Production Deployment on Vercel (CRITICAL)
-
-Ce prototype utilise **SQLite** (`prisma/dev.db`) pour le développement local. Cependant, le système de fichiers de Vercel est **en lecture seule** au moment de l'exécution (runtime).
-
-**Pour déployer en production :**
-
-1.  **Créez une base de données managée :** Utilisez [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres) ou un autre fournisseur PostgreSQL (Neon, Supabase).
-2.  **Mettez à jour le `.env` :** Ajoutez `POSTGRES_PRISMA_URL` et `POSTGRES_URL_NON_POOLING`.
-3.  **Mettez à jour `prisma/schema.prisma` :**
-    ```prisma
-    datasource db {
-      provider = "postgresql"
-      url      = env("POSTGRES_PRISMA_URL")
-      directUrl = env("POSTGRES_URL_NON_POOLING")
-    }
-    ```
-4.  **Exécutez les migrations :** `npx prisma migrate deploy`
-
-## Développement local
+## Installation Locale
 
 ```bash
+# 1. Cloner le projet
+git clone <votre-repo>
+
+# 2. Installer les dépendances
 npm install
+
+# 3. Configurer l'environnement
+cp .env.example .env
+# Remplissez .env avec vos accès PostgreSQL
+
+# 4. Initialiser la base de données
 npx prisma db push
-npx ts-node prisma/seed.ts
+npx prisma db seed
+
+# 5. Lancer le serveur
 npm run dev
 ```
 
-Ouvrez [http://localhost:3000](http://localhost:3000) pour voir le résultat.
-
-### Identifiants de test (Seed)
+### Identifiants de test (après Seed)
 - **Admin :** `admin@edu.ma` / `password123`
 - **Professeur :** `salma@edu.ma` / `password123`
 - **Parent :** `parent@email.com` / `password123`

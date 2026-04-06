@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Menu, X, LayoutDashboard, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { getSession, logout } from "@/actions/auth"
+import { getSessionUser, logout } from "@/actions/auth"
 
 const navigation = [
   { name: "Avantages", href: "/#avantages" },
@@ -19,7 +19,7 @@ export function Header() {
   const [user, setUser] = React.useState<any>(null)
 
   React.useEffect(() => {
-    getSession().then(setUser)
+    getSessionUser().then(setUser)
   }, [])
 
   return (

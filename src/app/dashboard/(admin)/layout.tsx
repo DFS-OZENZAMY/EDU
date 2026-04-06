@@ -15,7 +15,7 @@ import {
   User as UserIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { logout, getSession } from "@/actions/auth"
+import { logout, getSessionUser } from "@/actions/auth"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 const sidebarNavigation = [
@@ -42,7 +42,7 @@ export default function DashboardLayout({
   const [user, setUser] = React.useState<any>(null)
 
   React.useEffect(() => {
-    getSession().then(setUser)
+    getSessionUser().then(setUser)
   }, [])
 
   return (

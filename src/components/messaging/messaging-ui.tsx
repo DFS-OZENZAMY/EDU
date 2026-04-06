@@ -5,7 +5,7 @@ import { Send, Search, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getConversations, getAdminUsers } from "@/actions/data"
 import { sendMessage } from "@/actions/teacher"
-import { getSession } from "@/actions/auth"
+import { getSessionUser } from "@/actions/auth"
 
 interface MessagingUIProps {
     primaryColorClass: string;
@@ -22,7 +22,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
   const [mobileShowChat, setMobileShowChat] = React.useState(false)
 
   React.useEffect(() => {
-    getSession().then(setCurrentUser)
+    getSessionUser().then(setCurrentUser)
     getAdminUsers().then(setAllUsers)
     fetchConvs()
   }, [])

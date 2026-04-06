@@ -1,9 +1,42 @@
-node_modules
-.next
-out
-build
-.env*.local
-.vercel
-*.log
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-/src/generated/prisma
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# artifacts
+*.png
+*.zip
+*.json
+*.log
