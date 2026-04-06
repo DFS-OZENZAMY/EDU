@@ -8,12 +8,35 @@ import { createUser, deleteUser } from "@/actions/admin"
 
 export default function UsersPage() {
   const [users, setUsers] = React.useState<any[]>([])
+  const [filteredUsers, setFilteredUsers] = React.useState<any[]>([])
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [roleFilter, setRoleFilter] = React.useState("Tous les rôles")
   const [showCreateForm, setShowCreateForm] = React.useState(false)
-  const [showLinkModal, setShowLinkModal] = React.useState(false)
 
   React.useEffect(() => {
-    getAdminUsers().then(setUsers)
+    getAdminUsers().then(data => {
+        setUsers(data)
+        setFilteredUsers(data)
+    })
   }, [])
+
+  React.useEffect(() => {
+    let result = users
+    if (searchTerm) {
+        result = result.filter(u =>
+            u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    }
+    if (roleFilter !== "Tous les rôles") {
+        const roleMap: Record<string, string> = {
+            "Enseignant": "TEACHER",
+            "Parent": "PARENT"
+        }
+        result = result.filter(u => u.role === roleMap[roleFilter])
+    }
+    setFilteredUsers(result)
+  }, [searchTerm, roleFilter, users])
 
   const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -31,9 +54,11 @@ export default function UsersPage() {
           <p className="text-gray-500">Créez et gérez les comptes professeurs et parents.</p>
         </div>
         <div className="flex gap-3">
-           <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowLinkModal(true)}>
-             <LinkIcon className="h-4 w-4" />
-             Lier Parent/Élève
+           <Button variant="outline" className="flex items-center gap-2" asChild>
+             <Link href="/dashboard/link-accounts">
+                <LinkIcon className="h-4 w-4" />
+                Lier Parent/Élève
+             </Link>
            </Button>
            <Button className="flex items-center gap-2" onClick={() => setShowCreateForm(true)}>
              <UserPlus className="h-4 w-4" />
@@ -82,9 +107,15 @@ export default function UsersPage() {
                 type="text"
                 placeholder="Rechercher un utilisateur..."
                 className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-lg text-sm focus:ring-2 focus:ring-primary/20"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
-           <select className="bg-gray-50 border-0 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+           <select
+             className="bg-gray-50 border-0 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20"
+             value={roleFilter}
+             onChange={(e) => setRoleFilter(e.target.value)}
+           >
               <option>Tous les rôles</option>
               <option>Enseignant</option>
               <option>Parent</option>
@@ -102,11 +133,11 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
                         {user.name.charAt(0)}
                       </div>
                       <span className="font-medium text-gray-900">{user.name}</span>
@@ -114,17 +145,15 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded ${
-                      user.role === 'Enseignant' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                      user.role === 'TEACHER' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
                     }`}>
-                      {user.role}
+                      {user.role === 'TEACHER' ? 'PROFESSEUR' : user.role === 'PARENT' ? 'PARENT' : 'ADMIN'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{user.email}</td>
                   <td className="px-6 py-4">
-                    <span className={`h-2 w-2 rounded-full inline-block mr-2 ${
-                      user.status === 'Actif' ? 'bg-green-500' : 'bg-orange-400'
-                    }`} />
-                    <span className="text-sm text-gray-700">{user.status}</span>
+                    <span className="h-2 w-2 rounded-full inline-block mr-2 bg-green-500" />
+                    <span className="text-sm text-gray-700">Actif</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
@@ -186,35 +215,6 @@ export default function UsersPage() {
          </div>
       )}
 
-      {/* Link Parent/Student Modal Mockup */}
-      {showLinkModal && (
-         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <Card className="w-full max-w-lg p-6 space-y-4">
-               <h3 className="text-xl font-bold">Lier un Parent à un Élève</h3>
-               <p className="text-sm text-gray-500">Cette action permettra au parent de suivre les résultats de son enfant.</p>
-               <div className="space-y-4">
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Sélectionner le Parent</label>
-                     <select className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                        <option>Mme Salma Bennani</option>
-                        <option>M. Driss Alaoui</option>
-                     </select>
-                  </div>
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Sélectionner l'Élève</label>
-                     <select className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                        <option>Youssef Bennani (CP-B)</option>
-                        <option>Sara Alaoui (CE1-A)</option>
-                     </select>
-                  </div>
-               </div>
-               <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowLinkModal(false)}>Annuler</Button>
-                  <Button onClick={() => setShowLinkModal(false)} className="bg-primary">Confirmer le lien</Button>
-               </div>
-            </Card>
-         </div>
-      )}
     </div>
   )
 }
