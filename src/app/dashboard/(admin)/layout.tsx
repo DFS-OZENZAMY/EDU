@@ -15,7 +15,8 @@ import {
   ChefHat,
   BrainCircuit,
   BookOpen,
-  Layout
+  Layout,
+  ShieldCheck
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
@@ -42,13 +43,13 @@ export default function DashboardLayout({
     { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar, show: true },
     { name: "Élèves", href: "/dashboard/students", icon: GraduationCap, show: enabledModules.SIS },
     { name: "Classes", href: "/dashboard/classes", icon: Users, show: enabledModules.SIS },
-    { name: "Notes & Bulletins", href: "/dashboard/grades", icon: BarChart3, show: enabledModules.LMS },
+    { name: "Gestion RH", href: "/dashboard/hr", icon: ShieldCheck, show: enabledModules.HR },
     { name: "Finances", href: "/dashboard/finance", icon: Wallet, show: enabledModules.FINANCE },
     { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard, show: enabledModules.SUBSCRIPTION },
     { name: "AI Analytics", href: "/dashboard/analytics", icon: BrainCircuit, show: enabledModules.ANALYTICS },
     { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },
     { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, show: enabledModules.CANTEEN },
-    { name: "Modules", href: "/dashboard/settings/modules", icon: Layout, show: true },
+    { name: "Workspace", href: "/dashboard/settings/modules", icon: Layout, show: true },
     { name: "Mon Profil", href: "/dashboard/admin/admin-profile", icon: Users, show: true },
     { name: "Paramètres", href: "/dashboard/settings", icon: Settings, show: true },
   ]

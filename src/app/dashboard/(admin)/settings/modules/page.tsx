@@ -29,6 +29,7 @@ export default function WorkspaceModulesPage() {
     { key: "FINANCE", name: "Module Financier", desc: "Paiements, facturation et suivi des frais", icon: Wallet, color: "emerald" },
     { key: "ANALYTICS", name: "AI Analytics", desc: "Prédiction de performance et alertes décrochage", icon: BarChart3, color: "indigo" },
     { key: "CANTEEN", name: "Gestion Cantine", desc: "Menus quotidiens et réservations", icon: ChefHat, color: "orange" },
+    { key: "HR", name: "Gestion RH", desc: "Suivi carrière, personnel et conformité sociale", icon: ShieldCheck, color: "emerald" },
     { key: "SUBSCRIPTION", name: "Gestion Abonnement", desc: "Facturation SaaS et contrôle de la formule", icon: CreditCard, color: "slate" },
   ]
 

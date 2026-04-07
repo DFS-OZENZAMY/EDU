@@ -41,25 +41,25 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-700">
       {/* Premium Welcome Banner */}
-      <div className="relative overflow-hidden bg-slate-900 rounded-[40px] p-10 text-white shadow-2xl shadow-slate-900/20">
-        <div className="absolute top-0 right-0 p-10 opacity-10">
-            <Zap className="h-40 w-40 text-primary" />
+      <div className="relative overflow-hidden bg-slate-900 rounded-[32px] md:rounded-[40px] p-6 md:p-10 text-white shadow-2xl shadow-slate-900/20">
+        <div className="absolute top-0 right-0 p-6 md:p-10 opacity-10">
+            <Zap className="h-24 w-24 md:h-40 md:w-40 text-primary" />
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 md:gap-10">
           <div>
-            <h2 className="text-4xl font-black tracking-tight mb-3">Bonjour, Administrateur !</h2>
-            <p className="text-slate-400 font-bold max-w-lg leading-relaxed">
-                Votre instance <span className="text-primary italic">SaaS EDU</span> est synchronisée. Toutes les activités de l'établissement sont monitorées en temps réel.
+            <h2 className="text-2xl md:text-4xl font-black tracking-tight mb-2 md:mb-3">Bonjour, Administrateur !</h2>
+            <p className="text-slate-400 font-bold max-w-lg leading-relaxed text-sm md:text-base">
+                Votre instance <span className="text-primary italic">SaaS EDU</span> est synchronisée.
             </p>
           </div>
-          <div className="flex gap-4">
-             <div className="bg-white/10 px-6 py-4 rounded-[24px] backdrop-blur-md border border-white/10 text-center min-w-[120px] group hover:bg-white/20 transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Session</p>
-                <p className="text-xl font-black">2026/27</p>
+          <div className="flex flex-wrap gap-3 md:gap-4 w-full lg:w-auto">
+             <div className="flex-1 lg:flex-none bg-white/10 px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-[24px] backdrop-blur-md border border-white/10 text-center min-w-[100px] md:min-w-[120px] group hover:bg-white/20 transition-all">
+                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">Session</p>
+                <p className="text-sm md:text-xl font-black">2026/27</p>
              </div>
-             <div className="bg-primary px-6 py-4 rounded-[24px] text-center min-w-[120px] shadow-lg shadow-primary/20">
-                <p className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1">État</p>
-                <p className="text-xl font-black">OPÉRATIONNEL</p>
+             <div className="flex-1 lg:flex-none bg-primary px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-[24px] text-center min-w-[100px] md:min-w-[120px] shadow-lg shadow-primary/20">
+                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-blue-100 mb-0.5 md:mb-1">État</p>
+                <p className="text-sm md:text-xl font-black uppercase">Actif</p>
              </div>
           </div>
         </div>
