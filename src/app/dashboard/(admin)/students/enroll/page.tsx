@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { UserPlus, Trash2, Calendar, Phone, CreditCard, Mail, GraduationCap, Plus, Loader2 } from "lucide-react"
+import { UserPlus, Trash2, Calendar, Phone, CreditCard, Mail, GraduationCap, Plus, Loader2, AlertCircle } from "lucide-react"
 import { enrollParentWithStudents } from "@/actions/enrollment"
 import { getAllClasses } from "@/actions/data"
 import { Button } from "@/components/ui/button"
@@ -10,32 +10,46 @@ import { useRouter } from "next/navigation"
 export default function EnrollmentPage() {
   const router = useRouter()
   const [classes, setClasses] = React.useState<any[]>([])
-  const [studentRows, setStudentRows] = React.useState<number[]>([1])
+  const [studentRows, setStudentRows] = React.useState<{id: string, index: number}[]>([{id: '1', index: 1}])
   const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     getAllClasses().then(setClasses)
   }, [])
 
-  const addStudent = () => setStudentRows([...studentRows, studentRows.length + 1])
-  const removeStudent = (id: number) => {
+  const addStudent = () => {
+      const nextIndex = studentRows.length > 0 ? Math.max(...studentRows.map(r => r.index)) + 1 : 1;
+      setStudentRows([...studentRows, { id: Math.random().toString(36).substr(2, 9), index: nextIndex }])
+  }
+
+  const removeStudent = (id: string) => {
     if (studentRows.length > 1) {
-        setStudentRows(studentRows.filter(r => r !== id))
+        setStudentRows(studentRows.filter(r => r.id !== id))
     }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
     const formData = new FormData(e.currentTarget)
+
+    // Add information about which indices to look for
+    const indices = studentRows.map(r => r.index).join(',')
+    formData.append('studentIndices', indices)
+
     try {
         const res = await enrollParentWithStudents(formData)
         if (res.success) {
             router.push("/dashboard/students")
+        } else {
+            setError(res.error || "Une erreur est survenue lors de l'inscription.")
+            setIsLoading(false)
         }
     } catch (err) {
         console.error(err)
-    } finally {
+        setError("Erreur de connexion au serveur.")
         setIsLoading(false)
     }
   }
@@ -46,6 +60,13 @@ export default function EnrollmentPage() {
         <h2 className="text-4xl font-black text-slate-900 tracking-tight">Inscription Parent & Enfants</h2>
         <p className="text-slate-500 font-bold mt-1 uppercase text-xs tracking-widest">Processus d'enrôlement multi-étapes unifié</p>
       </div>
+
+      {error && (
+          <div className="bg-red-50 text-red-600 p-6 rounded-[24px] border border-red-100 flex items-center gap-4 animate-in slide-in-from-top-4 duration-300">
+              <AlertCircle className="h-6 w-6" />
+              <p className="text-sm font-black uppercase tracking-tight">{error}</p>
+          </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-10">
         {/* Parent Info */}
@@ -91,15 +112,15 @@ export default function EnrollmentPage() {
                 </button>
             </div>
 
-            {studentRows.map((id, index) => (
-                <Card key={id} className="p-10 border-0 shadow-lg shadow-slate-100 rounded-[32px] relative group border-l-8 border-blue-500">
+            {studentRows.map((row, visualIndex) => (
+                <Card key={row.id} className="p-10 border-0 shadow-lg shadow-slate-100 rounded-[32px] relative group border-l-8 border-blue-500">
                     <div className="flex justify-between items-center mb-8">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-black text-xs italic">{index + 1}</div>
-                            <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Élève #{index + 1}</span>
+                            <div className="h-8 w-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-black text-xs italic">{visualIndex + 1}</div>
+                            <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Élève #{visualIndex + 1}</span>
                         </div>
                         {studentRows.length > 1 && (
-                            <button type="button" onClick={() => removeStudent(id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                            <button type="button" onClick={() => removeStudent(row.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
                                 <Trash2 className="h-5 w-5" />
                             </button>
                         )}
@@ -108,15 +129,15 @@ export default function EnrollmentPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Complet de l'Élève</label>
-                            <input name={`studentName_${id}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="Nom de l'enfant" />
+                            <input name={`studentName_${row.index}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="Nom de l'enfant" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de Naissance</label>
-                            <input name={`studentBday_${id}`} type="date" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" />
+                            <input name={`studentBday_${row.index}`} type="date" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" />
                         </div>
                         <div className="space-y-2 md:col-span-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe d'Affectation (Optionnel)</label>
-                            <select name={`studentClass_${id}`} className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none cursor-pointer">
+                            <select name={`studentClass_${row.index}`} className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none cursor-pointer">
                                 <option value="">Choisir une classe plus tard</option>
                                 {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
