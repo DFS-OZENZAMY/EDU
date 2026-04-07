@@ -174,6 +174,40 @@ export async function deleteClass(id: number) {
   }
 }
 
+export async function updateClass(id: number, data: any) {
+  try {
+    const session = await verifySchoolAdmin()
+    await prisma.class.update({
+      where: { id, schoolId: session.schoolId! },
+      data: {
+        name: data.name,
+        level: data.level,
+        room: data.room,
+        teacherId: data.teacherId ? parseInt(data.teacherId) : null
+      }
+    })
+    revalidatePath("/dashboard/classes")
+    return { success: true }
+  } catch (err) {
+    return { error: "Erreur lors de la mise à jour." }
+  }
+}
+
+export async function assignStudentsToClass(classId: number, studentIds: number[]) {
+    try {
+      const session = await verifySchoolAdmin()
+      await prisma.student.updateMany({
+          where: { id: { in: studentIds }, schoolId: session.schoolId! },
+          data: { classId }
+      })
+      revalidatePath("/dashboard/classes")
+      revalidatePath("/dashboard/students")
+      return { success: true }
+    } catch (err) {
+        return { error: "Échec de l'attribution." }
+    }
+}
+
 export async function updateCanteenMenu(formData: FormData) {
   try {
     const session = await verifySchoolAdmin()
