@@ -42,7 +42,12 @@ export async function login(formData: FormData) {
   });
 
   const cookieStore = await cookies()
-  cookieStore.set("session", session, { expires, httpOnly: true, secure: true, path: '/' });
+  cookieStore.set("session", session, {
+    expires,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    path: '/'
+  });
 
   if (user.role === Role.SUPER_ADMIN) redirect("/dashboard/super")
   if (user.role === Role.SCHOOL_ADMIN) redirect("/dashboard/overview")
@@ -119,7 +124,12 @@ export async function register(formData: FormData) {
   });
 
   const cookieStore = await cookies()
-  cookieStore.set("session", session, { expires, httpOnly: true, secure: true, path: '/' });
+  cookieStore.set("session", session, {
+    expires,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    path: '/'
+  });
 
   redirect("/dashboard/overview")
 }
