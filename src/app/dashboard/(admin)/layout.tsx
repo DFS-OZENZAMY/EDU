@@ -39,12 +39,10 @@ export default function DashboardLayout({
 
   const sidebarNavigation = [
     { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard, show: true },
-    { name: "Utilisateurs", href: "/dashboard/users", icon: Users, show: true },
-    { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar, show: true },
+    { name: "Gestion RH", href: "/dashboard/hr", icon: ShieldCheck, show: enabledModules.HR },
     { name: "Élèves", href: "/dashboard/students", icon: GraduationCap, show: enabledModules.SIS },
     { name: "Classes", href: "/dashboard/classes", icon: Users, show: enabledModules.SIS },
-    { name: "Gestion RH", href: "/dashboard/hr", icon: ShieldCheck, show: enabledModules.HR },
-    { name: "Finances", href: "/dashboard/finance", icon: Wallet, show: enabledModules.FINANCE },
+    { name: "Trésorerie", href: "/dashboard/finance", icon: Wallet, show: enabledModules.FINANCE },
     { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard, show: enabledModules.SUBSCRIPTION },
     { name: "AI Analytics", href: "/dashboard/analytics", icon: BrainCircuit, show: enabledModules.ANALYTICS },
     { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },

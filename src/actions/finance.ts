@@ -2,70 +2,71 @@
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import { Role } from "@prisma/client"
 
 async function verifySchoolAdmin() {
   const session = await getSession()
-  if (!session || (session.role !== 'SCHOOL_ADMIN' && session.role !== 'ADMIN' && session.role !== 'ACCOUNTANT' && session.role !== 'SUPER_ADMIN')) {
+  if (!session || (session.role !== Role.SCHOOL_ADMIN && session.role !== Role.ACCOUNTANT && session.role !== Role.SUPER_ADMIN)) {
     throw new Error("Accès non autorisé")
   }
   return session
 }
 
-export async function getFinancialStats() {
+export async function getTreasuryData() {
   const session = await verifySchoolAdmin()
   const schoolId = session.schoolId
 
-  const [totalCollected, pendingFees, recentInvoices] = await Promise.all([
-    prisma.fee.aggregate({
-      where: { status: 'PAID', parent: { schoolId } },
-      _sum: { amount: true }
-    }),
-    prisma.fee.aggregate({
-      where: { status: 'PENDING', parent: { schoolId } },
-      _sum: { amount: true }
-    }),
+  const [income, payroll] = await Promise.all([
     prisma.fee.findMany({
       where: { parent: { schoolId } },
-      include: { parent: true },
-      orderBy: { id: 'desc' },
-      take: 10
+      include: { parent: true, student: true },
+      orderBy: { id: 'desc' }
+    }),
+    prisma.salaryPayment.findMany({
+        where: { user: { schoolId } },
+        include: { user: true },
+        orderBy: { id: 'desc' }
     })
   ])
 
+  const totalIncome = income.filter(f => f.status === 'PAID').reduce((acc, f) => acc + f.amount, 0)
+  const totalExpenses = payroll.reduce((acc, p) => acc + p.amount + p.bonus, 0)
+
   return {
-    totalCollected: totalCollected._sum.amount || 0,
-    pendingFees: pendingFees._sum.amount || 0,
-    recentInvoices,
-    monthlyRevenue: [
-        { name: 'Jan', value: 45000 },
-        { name: 'Feb', value: 52000 },
-        { name: 'Mar', value: 48000 },
-        { name: 'Apr', value: 61000 },
-    ]
+    income,
+    payroll,
+    stats: {
+        totalIncome,
+        totalExpenses,
+        netBalance: totalIncome - totalExpenses,
+        pendingIncome: income.filter(f => f.status === 'PENDING').reduce((acc, f) => acc + f.amount, 0)
+    }
   }
 }
 
-export async function createInvoice(parentId: number, amount: number, month: string) {
+export async function createInvoice(parentId: number, studentId: number, amount: number, month: string) {
   await verifySchoolAdmin()
   await prisma.fee.create({
     data: {
       parentId,
+      studentId,
       amount,
       month,
       status: 'PENDING'
     }
   })
-  revalidatePath("/dashboard/admin/finance")
+  revalidatePath("/dashboard/finance")
 }
 
-export async function markAsPaid(feeId: number) {
+export async function markFeeAsPaid(feeId: number, mode: string) {
   await verifySchoolAdmin()
   await prisma.fee.update({
     where: { id: feeId },
     data: {
         status: 'PAID',
-        paidAt: new Date()
+        paidAt: new Date(),
+        paymentMode: mode
     }
   })
-  revalidatePath("/dashboard/admin/finance")
+  revalidatePath("/dashboard/finance")
 }

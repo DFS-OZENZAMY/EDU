@@ -83,6 +83,9 @@ model User {
   school      School?  @relation(fields: [schoolId], references: [id])
   createdAt   DateTime @default(now())
 
+  // HR Extension
+  employeeProfile EmployeeProfile?
+
   // Specific relations
   teacherClasses Class[]  @relation("TeacherToClass")
   parentStudents Student[] @relation("ParentToStudent")
@@ -90,8 +93,32 @@ model User {
   messagesReceived Message[] @relation("ReceivedMessages")
   clockIns       ClockIn[]
   fees           Fee[]
+  salaryPayments SalaryPayment[]
   lessonLogs     LessonLog[]
   notifications  Notification[]
+}
+
+model EmployeeProfile {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  baseSalary    Float    @default(0)
+  contractType  String   @default("CDI") // "CDI", "CDD", "ANAPEC"
+  rib           String?
+  cnssNumber    String?
+  hiringDate    DateTime @default(now())
+  position      String?
+}
+
+model SalaryPayment {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  amount        Float
+  bonus         Float    @default(0)
+  month         String
+  status        String   @default("PAID") // "PAID", "PENDING"
+  paidAt        DateTime @default(now())
 }
 
 model ClockIn {
@@ -105,12 +132,15 @@ model Fee {
   id          Int      @id @default(autoincrement())
   parentId    Int
   parent      User     @relation(fields: [parentId], references: [id])
+  studentId   Int?     // Link to specific child if needed
+  student     Student? @relation(fields: [studentId], references: [id])
   month       String
   amount      Float
-  status      String
-  paidAt    DateTime?
-  invoiceUrl String?
-  createdAt DateTime @default(now())
+  status      String   @default("PENDING") // "PAID", "PENDING"
+  paidAt      DateTime?
+  paymentMode String?  // "VIREMENT", "ESPÈCES", "CHÈQUE"
+  invoiceUrl  String?
+  createdAt   DateTime @default(now())
 }
 
 model Student {
@@ -120,13 +150,14 @@ model Student {
 
   schoolId  Int
   school    School   @relation(fields: [schoolId], references: [id])
-  classId   Int?     // Made optional as requested
+  classId   Int?
   class     Class?   @relation(fields: [classId], references: [id])
   parentId  Int?
   parent    User?    @relation("ParentToStudent", fields: [parentId], references: [id])
 
   grades    Grade[]
   attendance Attendance[]
+  fees      Fee[]
 }
 
 model Class {
