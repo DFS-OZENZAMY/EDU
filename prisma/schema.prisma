@@ -8,12 +8,61 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  STAFF
+  ACCOUNTANT
+}
+
+enum SubscriptionTier {
+  FREE
+  STANDARD
+  PREMIUM
+  ENTERPRISE
+}
+
+model School {
+  id            Int               @id @default(autoincrement())
+  name          String
+  domain        String?           @unique
+  address       String?
+  city          String?
+  logo          String?
+  plan          SubscriptionTier  @default(FREE)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Multi-tenancy relations
+  users         User[]
+  classes       Class[]
+  students      Student[]
+  canteenMenus  CanteenMenu[]
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id          Int      @id @default(autoincrement())
+  schoolId    Int
+  school      School   @relation(fields: [schoolId], references: [id])
+  stripeId    String?  @unique
+  status      String   // "active", "canceled", "past_due"
+  tier        SubscriptionTier
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   name      String
-  role      String   // "ADMIN", "TEACHER", "PARENT"
+  role      Role     @default(STUDENT)
+  schoolId  Int?
+  school    School?  @relation(fields: [schoolId], references: [id])
   createdAt DateTime @default(now())
 
   // Specific relations
@@ -42,11 +91,14 @@ model Fee {
   amount    Float
   status    String   // "PAID", "PENDING"
   paidAt    DateTime?
+  invoiceUrl String?
 }
 
 model Student {
   id        Int      @id @default(autoincrement())
   name      String
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id])
   classId   Int
   class     Class    @relation(fields: [classId], references: [id])
   parentId  Int?
@@ -60,6 +112,8 @@ model Class {
   name      String
   level     String
   room      String?
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id])
   teacherId Int?
   teacher   User?    @relation("TeacherToClass", fields: [teacherId], references: [id])
   students  Student[]
@@ -99,10 +153,14 @@ model LessonLog {
 
 model CanteenMenu {
   id        Int      @id @default(autoincrement())
-  date      DateTime @unique
+  schoolId  Int
+  school    School   @relation(fields: [schoolId], references: [id])
+  date      DateTime
   dish      String
   dessert   String?
   createdAt DateTime @default(now())
+
+  @@unique([schoolId, date])
 }
 
 model Message {

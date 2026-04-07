@@ -3,17 +3,32 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
+import { Role } from "@prisma/client"
+import { getSession } from "@/lib/auth"
+
+async function verifySchoolAdmin() {
+  const session = await getSession()
+  if (!session || (session.role !== Role.SCHOOL_ADMIN && session.role !== Role.SUPER_ADMIN)) {
+    // Note: In the new SaaS schema, school owners are SCHOOL_ADMIN.
+    // We check for SUPER_ADMIN too to allow platform owners to debug.
+    throw new Error("Accès non autorisé")
+  }
+  return session
+}
 
 export async function createUser(formData: FormData) {
   try {
+    const session = await verifySchoolAdmin()
     const name = formData.get("name") as string
     const email = formData.get("email") as string
-    const role = formData.get("role") as string
+    const roleStr = formData.get("role") as string
     const password = formData.get("password") as string || "password123"
 
-    if (!name || !email || !role) {
+    if (!name || !email || !roleStr) {
         return { error: "Veuillez remplir tous les champs obligatoires." }
     }
+
+    const role = roleStr as Role
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
@@ -23,7 +38,13 @@ export async function createUser(formData: FormData) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
-        data: { name, email, role, password: hashedPassword }
+        data: {
+            name,
+            email,
+            role,
+            password: hashedPassword,
+            schoolId: session.schoolId
+        }
     })
 
     await prisma.notification.create({
@@ -45,6 +66,7 @@ export async function createUser(formData: FormData) {
 
 export async function createClass(formData: FormData) {
   try {
+    const session = await verifySchoolAdmin()
     const name = formData.get("name") as string
     const level = formData.get("level") as string
     const room = formData.get("room") as string
@@ -56,7 +78,13 @@ export async function createClass(formData: FormData) {
     }
 
     await prisma.class.create({
-        data: { name, level, room, teacherId }
+        data: {
+            name,
+            level,
+            room,
+            teacherId,
+            schoolId: session.schoolId!
+        }
     })
     revalidatePath("/dashboard/classes")
     return { success: true }
@@ -67,6 +95,7 @@ export async function createClass(formData: FormData) {
 
 export async function linkParentStudent(formData: FormData) {
   try {
+    await verifySchoolAdmin()
     const parentId = parseInt(formData.get("parentId") as string)
     const studentId = parseInt(formData.get("studentId") as string)
 
@@ -87,6 +116,7 @@ export async function linkParentStudent(formData: FormData) {
 
 export async function createStudent(formData: FormData) {
   try {
+    const session = await verifySchoolAdmin()
     const name = formData.get("name") as string
     const classIdRaw = formData.get("classId") as string
     const classId = classIdRaw ? parseInt(classIdRaw) : null
@@ -96,7 +126,11 @@ export async function createStudent(formData: FormData) {
     }
 
     const student = await prisma.student.create({
-        data: { name, classId }
+        data: {
+            name,
+            classId: classId!,
+            schoolId: session.schoolId!
+        }
     })
 
     revalidatePath("/dashboard/students")
@@ -109,6 +143,7 @@ export async function createStudent(formData: FormData) {
 
 export async function deleteUser(id: number) {
   try {
+    await verifySchoolAdmin()
     await prisma.user.delete({ where: { id } })
     revalidatePath("/dashboard/users")
     return { success: true }
@@ -119,6 +154,7 @@ export async function deleteUser(id: number) {
 
 export async function deleteStudent(id: number) {
   try {
+    await verifySchoolAdmin()
     await prisma.student.delete({ where: { id } })
     revalidatePath("/dashboard/students")
     return { success: true }
@@ -129,6 +165,7 @@ export async function deleteStudent(id: number) {
 
 export async function deleteClass(id: number) {
   try {
+    await verifySchoolAdmin()
     await prisma.class.delete({ where: { id } })
     revalidatePath("/dashboard/classes")
     return { success: true }
@@ -139,6 +176,7 @@ export async function deleteClass(id: number) {
 
 export async function updateCanteenMenu(formData: FormData) {
   try {
+    const session = await verifySchoolAdmin()
     const dish = formData.get("dish") as string
     const dessert = formData.get("dessert") as string
     const dateStr = formData.get("date") as string
@@ -149,15 +187,26 @@ export async function updateCanteenMenu(formData: FormData) {
     }
 
     await prisma.canteenMenu.upsert({
-        where: { date },
+        where: {
+            schoolId_date: {
+                schoolId: session.schoolId!,
+                date: date
+            }
+        },
         update: { dish, dessert },
-        create: { date, dish, dessert }
+        create: {
+            date,
+            dish,
+            dessert,
+            schoolId: session.schoolId!
+        }
     })
 
     revalidatePath("/dashboard/parent")
     revalidatePath("/dashboard/canteen")
     return { success: true }
   } catch (err) {
+    console.error(err)
     return { error: "Erreur menu cantine." }
   }
 }

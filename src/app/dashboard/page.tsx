@@ -1,24 +1,29 @@
-import { getSessionUser } from "@/actions/auth"
 import { redirect } from "next/navigation"
+import { getSessionUser } from "@/actions/auth"
+import { Role } from "@prisma/client"
 
-export default async function DashboardPage() {
+export default async function DashboardRootPage() {
   const user = await getSessionUser()
 
   if (!user) {
     redirect("/login")
   }
 
-  if (user.role === "ADMIN") {
+  if (user.role === Role.SUPER_ADMIN) {
+    redirect("/dashboard/super")
+  }
+
+  if (user.role === Role.SCHOOL_ADMIN) {
     redirect("/dashboard/overview")
   }
 
-  if (user.role === "TEACHER") {
+  if (user.role === Role.TEACHER) {
     redirect("/dashboard/teacher")
   }
 
-  if (user.role === "PARENT") {
+  if (user.role === Role.PARENT) {
     redirect("/dashboard/parent")
   }
 
-  redirect("/login")
+  return redirect("/login")
 }

@@ -6,7 +6,10 @@ import { revalidatePath } from "next/cache"
 import { getSession } from "@/lib/auth"
 
 export async function getAdminUsers() {
+  const session = await getSession()
+  if (!session) return []
   return await prisma.user.findMany({
+    where: { schoolId: session.schoolId },
     include: {
         fees: true,
         parentStudents: {
@@ -29,7 +32,10 @@ export async function getTeacherClasses(teacherId: number) {
 }
 
 export async function getAllClasses() {
+  const session = await getSession()
+  if (!session) return []
   return await prisma.class.findMany({
+    where: { schoolId: session.schoolId! },
     include: {
         teacher: true,
         _count: {
@@ -40,7 +46,10 @@ export async function getAllClasses() {
 }
 
 export async function getAllStudents() {
+  const session = await getSession()
+  if (!session) return []
   return await prisma.student.findMany({
+    where: { schoolId: session.schoolId! },
     include: {
       class: true,
       parent: true,
@@ -90,6 +99,7 @@ export async function getMyData() {
 
   const id = session.userId
   const userRole = session.role
+  const schoolId = session.schoolId
 
   const notifications = await prisma.notification.findMany({
     where: { userId: id },
@@ -114,7 +124,12 @@ export async function getMyData() {
 
     const today = new Date().toISOString().split('T')[0]
     const menu = await prisma.canteenMenu.findUnique({
-        where: { date: new Date(today) }
+        where: {
+            schoolId_date: {
+                schoolId: schoolId!,
+                date: new Date(today)
+            }
+        }
     })
 
     return { students, notifications, canteenMenu: menu }
@@ -152,7 +167,7 @@ export async function getMyData() {
     return { classes, notifications }
   }
 
-  if (userRole === 'ADMIN') {
+  if (userRole === 'SCHOOL_ADMIN' || userRole === 'ADMIN') {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - i);
@@ -162,6 +177,7 @@ export async function getMyData() {
     const attendanceStats = await Promise.all(last7Days.map(async (date) => {
         const count = await prisma.attendance.count({
             where: {
+                student: { schoolId: schoolId! },
                 date: {
                     gte: new Date(date),
                     lt: new Date(new Date(date).getTime() + 86400000)

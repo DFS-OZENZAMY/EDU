@@ -14,18 +14,28 @@ export async function middleware(request: NextRequest) {
 
     try {
       const payload = await decrypt(session);
+      const role = payload.role;
 
-      // Simple role-based access control
-      if (pathname.startsWith('/dashboard/teacher') && payload.role !== 'TEACHER' && payload.role !== 'ADMIN') {
+      // Super Admin restriction
+      if (pathname.startsWith('/dashboard/super') && role !== 'SUPER_ADMIN') {
         return NextResponse.redirect(new URL('/dashboard/overview', request.url));
       }
-      if (pathname.startsWith('/dashboard/parent') && payload.role !== 'PARENT' && payload.role !== 'ADMIN') {
+
+      // School Admin / Admin restrictions
+      if (pathname.startsWith('/dashboard/overview') && role !== 'SCHOOL_ADMIN' && role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+         if (role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
+         if (role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
+         if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/super', request.url));
+      }
+
+      // Teacher dashboard restriction
+      if (pathname.startsWith('/dashboard/teacher') && !['TEACHER', 'SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
         return NextResponse.redirect(new URL('/dashboard/overview', request.url));
       }
-      if (pathname.startsWith('/dashboard/overview') && payload.role !== 'ADMIN') {
-          // If a teacher or parent tries to go to admin overview, redirect to their dashboard
-          if (payload.role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
-          if (payload.role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
+
+      // Parent dashboard restriction
+      if (pathname.startsWith('/dashboard/parent') && !['PARENT', 'SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
+        return NextResponse.redirect(new URL('/dashboard/overview', request.url));
       }
 
     } catch (err) {
@@ -38,11 +48,13 @@ export async function middleware(request: NextRequest) {
     if (session) {
       try {
         const payload = await decrypt(session);
-        if (payload.role === 'ADMIN') return NextResponse.redirect(new URL('/dashboard/overview', request.url));
-        if (payload.role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
-        if (payload.role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
+        const role = payload.role;
+        if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/super', request.url));
+        if (role === 'SCHOOL_ADMIN' || role === 'ADMIN') return NextResponse.redirect(new URL('/dashboard/overview', request.url));
+        if (role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
+        if (role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
       } catch (err) {
-        // Session invalid, continue to login
+        // Session invalid
       }
     }
   }

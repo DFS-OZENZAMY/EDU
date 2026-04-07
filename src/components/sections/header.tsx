@@ -1,115 +1,127 @@
 "use client"
 import * as React from "react"
 import Link from "next/link"
-import { Menu, X, LayoutDashboard, LogOut } from "lucide-react"
+import { Menu, X, LayoutDashboard, LogOut, ShieldCheck, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getSessionUser, logout } from "@/actions/auth"
 
 const navigation = [
   { name: "Avantages", href: "/#avantages" },
-  { name: "Modules", href: "/#modules" },
-  { name: "Interfaces", href: "/#interfaces" },
-  { name: "Tarifs", href: "/#tarifs" },
-  { name: "Contact", href: "/#contact" },
+  { name: "SaaS Features", href: "/#modules" },
+  { name: "Multi-Tenant", href: "/#interfaces" },
+  { name: "Tarification", href: "/#tarifs" },
 ]
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [user, setUser] = React.useState<any>(null)
+  const [isScrolled, setIsScrolled] = React.useState(false)
 
   React.useEffect(() => {
     getSessionUser().then(setUser)
+    const handleScroll = () => setIsScrolled(window.scrollY > 20)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
+    <header className={cn(
+        "fixed top-0 z-50 w-full transition-all duration-300",
+        isScrolled ? "bg-white/90 backdrop-blur-xl border-b border-slate-200 py-3 shadow-lg shadow-slate-900/5" : "bg-transparent py-6"
+    )}>
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">E</div>
-            <span className="text-xl font-bold text-gray-900">EDU</span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-xl shadow-slate-900/20 group-hover:scale-110 transition-transform">E</div>
+            <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">SaaS <span className="text-primary">EDU</span></span>
           </Link>
         </div>
+
         <div className="flex lg:hidden">
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+            className="p-2.5 text-slate-900 bg-slate-100 rounded-xl"
             onClick={() => setIsOpen(!isOpen)}
           >
-            <span className="sr-only">Open main menu</span>
-            {isOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
-        <div className="hidden lg:flex lg:gap-x-12">
+
+        <div className="hidden lg:flex lg:gap-x-10 items-center">
           {navigation.map((item) => (
-            <Link key={item.name} href={item.href} className="text-sm font-semibold leading-6 text-gray-900 hover:text-primary transition-colors">
+            <Link key={item.name} href={item.href} className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors">
               {item.name}
             </Link>
           ))}
+          <div className="h-1 w-1 bg-slate-300 rounded-full" />
+          <Link href="/register" className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700">
+             <Zap className="h-3 w-3 fill-current" /> Partenaire SaaS
+          </Link>
         </div>
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-4">
           {user ? (
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-6" asChild>
                 <Link href="/dashboard" className="flex items-center gap-2">
                   <LayoutDashboard className="h-4 w-4" />
-                  Tableau de bord
+                  Console
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => logout()} className="text-red-600 hover:text-red-700">
+              <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-6 shadow-xl shadow-slate-900/10" onClick={() => logout()}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Déconnexion
+                Logout
               </Button>
             </div>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Connexion</Link>
+              <Button variant="ghost" className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-6 text-slate-600" asChild>
+                <Link href="/login">Accès Client</Link>
               </Button>
-              <Button variant="primary" size="sm" asChild>
-                <Link href="/register">S'inscrire</Link>
+              <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-8 shadow-xl shadow-primary/20" asChild>
+                <Link href="/register" className="flex items-center gap-2">
+                    REJOINDRE <ShieldCheck className="h-4 w-4" />
+                </Link>
               </Button>
             </>
           )}
         </div>
       </nav>
+
       {/* Mobile menu */}
-      <div className={cn("lg:hidden", isOpen ? "block" : "hidden")}>
-        <div className="space-y-1 px-4 pb-3 pt-2">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-          <div className="pt-4 flex flex-col gap-2">
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 top-[70px] bg-white z-50 animate-in slide-in-from-top duration-300 p-6 space-y-8">
+          <div className="space-y-4">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="block text-xl font-black text-slate-900 uppercase tracking-tighter hover:text-primary border-b border-slate-50 pb-4"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col gap-4 pt-4">
             {user ? (
-              <>
-                <Button variant="ghost" className="w-full justify-start" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/dashboard">Tableau de bord</Link>
+                <Button className="bg-primary w-full py-8 rounded-2xl font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/dashboard">CONSOLE DE GESTION</Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-red-600" onClick={() => logout()}>
-                  Déconnexion
-                </Button>
-              </>
             ) : (
               <>
-                <Button variant="ghost" className="w-full" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/login">Connexion</Link>
+                <Button variant="ghost" className="w-full py-8 rounded-2xl font-black uppercase tracking-widest text-slate-600 border border-slate-100" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/login">ACCÈS CLIENT</Link>
                 </Button>
-                <Button variant="primary" className="w-full" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/register">S'inscrire</Link>
+                <Button className="bg-primary w-full py-8 rounded-2xl font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/register">CRÉER UNE INSTANCE</Link>
                 </Button>
               </>
             )}
           </div>
         </div>
-      </div>
+      )}
     </header>
   )
 }

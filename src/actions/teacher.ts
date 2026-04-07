@@ -4,12 +4,14 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { getSession } from "@/lib/auth"
+import { Role } from "@prisma/client"
 
 export async function clockIn() {
   const session = await getSession()
   if (!session) return { error: "Non authentifié" }
 
   const id = session.userId
+  const schoolId = session.schoolId
   const user = await prisma.user.findUnique({ where: { id } })
 
   await prisma.clockIn.create({
@@ -17,7 +19,13 @@ export async function clockIn() {
   })
 
   // Notify admin
-  const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } })
+  const admins = await prisma.user.findMany({
+    where: {
+        schoolId: schoolId!,
+        role: Role.SCHOOL_ADMIN
+    }
+  })
+
   for (const admin of admins) {
     await prisma.notification.create({
         data: {
@@ -64,9 +72,6 @@ export async function enterGrade(formData: FormData) {
   const value = parseFloat(formData.get("value") as string)
   const observation = formData.get("observation") as string
 
-  // Upsert or create new grade?
-  // Let's create a new grade record to keep history, but often in school systems we update the specific "Control" result.
-  // For simplicity and "real" sync, we'll create it.
   const grade = await prisma.grade.create({
     data: { studentId, subject, value, observation },
     include: { student: { include: { parent: true } } }
@@ -91,12 +96,18 @@ export async function enterGrade(formData: FormData) {
 }
 
 export async function sendMessage(formData: FormData) {
-  const senderId = parseInt(formData.get("senderId") as string)
+  const session = await getSession()
+  if (!session) return
+
   const receiverId = parseInt(formData.get("receiverId") as string)
   const content = formData.get("content") as string
 
   const message = await prisma.message.create({
-    data: { senderId, receiverId, content },
+    data: {
+        senderId: session.userId,
+        receiverId,
+        content
+    },
     include: { sender: true }
   })
 
