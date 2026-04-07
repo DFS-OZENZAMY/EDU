@@ -73,7 +73,7 @@ export default function UsersPage() {
                           <input name="email" type="email" required className="w-full px-5 py-3 bg-slate-50 border-0 rounded-2xl text-xs font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:bg-white transition-all" placeholder="prof@ecole.ma" />
                       </div>
                       <div className="space-y-1">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rôle Système</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rôle Système (Staff)</label>
                           <select name="role" required className="w-full px-5 py-3 bg-slate-50 border-0 rounded-2xl text-xs font-bold outline-none focus:ring-4 focus:ring-slate-900/5 focus:bg-white transition-all appearance-none cursor-pointer">
                               <option value={Role.TEACHER}>Enseignant (Prof)</option>
                               <option value={Role.ACCOUNTANT}>Comptable</option>

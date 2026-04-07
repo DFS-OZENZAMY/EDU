@@ -115,7 +115,7 @@ export default function EnrollmentPage() {
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Complet de l'Élève</label>
                             <input name={`studentName_${id}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="Nom de l'enfant" />
@@ -124,10 +124,10 @@ export default function EnrollmentPage() {
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de Naissance</label>
                             <input name={`studentBday_${id}`} type="date" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe d'Affectation</label>
-                            <select name={`studentClass_${id}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none cursor-pointer">
-                                <option value="">Choisir une classe</option>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe d'Affectation (Optionnel)</label>
+                            <select name={`studentClass_${id}`} className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none cursor-pointer">
+                                <option value="">Choisir une classe plus tard</option>
                                 {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         </div>

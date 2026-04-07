@@ -9,7 +9,10 @@ export async function getAdminUsers() {
   const session = await getSession()
   if (!session) return []
   return await prisma.user.findMany({
-    where: { schoolId: session.schoolId },
+    where: {
+        schoolId: session.schoolId,
+        id: { not: session.userId } // Exclude current user
+    },
     include: {
         fees: true,
         parentStudents: {

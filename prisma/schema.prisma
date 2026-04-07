@@ -40,8 +40,8 @@ model School {
   ownerPhone    String?
 
   // Modular features
-  enabledModules Json?             @default("{}") // School-wide toggles
-  rolePermissions Json?            @default("{}") // Role-specific module access
+  enabledModules Json?             @default("{}")
+  rolePermissions Json?            @default("{}")
 
   isActive      Boolean           @default(true)
   createdAt     DateTime          @default(now())
@@ -60,7 +60,7 @@ model Subscription {
   schoolId    Int
   school      School   @relation(fields: [schoolId], references: [id])
   stripeId    String?  @unique
-  status      String   // "active", "canceled", "past_due"
+  status      String
   tier        SubscriptionTier
   amount      Float?
   startDate   DateTime @default(now())
@@ -76,7 +76,7 @@ model User {
 
   // Advanced Profile
   phone       String?
-  cin         String?   // Card of Identity
+  cin         String?
   isActive    Boolean   @default(true)
 
   schoolId    Int?
@@ -107,7 +107,7 @@ model Fee {
   parent      User     @relation(fields: [parentId], references: [id])
   month       String
   amount      Float
-  status    String   // "PAID", "PENDING"
+  status      String
   paidAt    DateTime?
   invoiceUrl String?
   createdAt DateTime @default(now())
@@ -120,8 +120,8 @@ model Student {
 
   schoolId  Int
   school    School   @relation(fields: [schoolId], references: [id])
-  classId   Int
-  class     Class    @relation(fields: [classId], references: [id])
+  classId   Int?     // Made optional as requested
+  class     Class?   @relation(fields: [classId], references: [id])
   parentId  Int?
   parent    User?    @relation("ParentToStudent", fields: [parentId], references: [id])
 
@@ -156,7 +156,7 @@ model Attendance {
   id        Int      @id @default(autoincrement())
   studentId Int
   student   Student  @relation(fields: [studentId], references: [id])
-  status    String   // "PRESENT", "LATE", "ABSENT"
+  status    String
   date      DateTime @default(now())
 }
 
@@ -167,8 +167,8 @@ model LessonLog {
   teacherId   Int
   teacher     User     @relation(fields: [teacherId], references: [id])
   subject     String
-  content     String   // Lesson details
-  homework    String?  // Homework assigned
+  content     String
+  homework    String?
   date        DateTime @default(now())
   createdAt   DateTime @default(now())
 }
@@ -201,7 +201,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   title     String
   message   String
-  type      String   // "INFO", "SUCCESS", "WARNING", "ERROR"
+  type      String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }

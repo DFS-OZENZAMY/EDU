@@ -38,19 +38,19 @@ export async function enrollParentWithStudents(formData: FormData) {
   }
 
   // Handle multiple students
-  // format in form: studentName_1, studentBday_1, studentClass_1
   let index = 1
   while (formData.has(`studentName_${index}`)) {
       const name = formData.get(`studentName_${index}`) as string
       const bday = formData.get(`studentBday_${index}`) as string
-      const classId = parseInt(formData.get(`studentClass_${index}`) as string)
+      const classIdRaw = formData.get(`studentClass_${index}`) as string
+      const classId = classIdRaw ? parseInt(classIdRaw) : null
 
-      if (name && classId) {
+      if (name) {
           await prisma.student.create({
               data: {
                   name,
-                  birthday: new Date(bday),
-                  classId,
+                  birthday: bday ? new Date(bday) : null,
+                  classId: classId,
                   parentId,
                   schoolId: session.schoolId
               }
