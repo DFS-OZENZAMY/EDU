@@ -63,11 +63,11 @@ export default function ClassesPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                <span>Titulaire: <span className="font-medium">{cls.teacher?.name || "N/A"}</span></span>
+                <span>Titulaire: <span className="font-medium">{cls.teacher?.name || "Non assigné"}</span></span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
                 <Settings2 className="h-3 w-3" />
-                <span>Local: {cls.room}</span>
+                <span>Local: {cls.room || "N/A"}</span>
               </div>
             </div>
 
@@ -114,7 +114,7 @@ export default function ClassesPage() {
               {classes.map((cls) => (
                 <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 font-medium text-gray-900">{cls.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{cls.teacher?.name || "N/A"}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{cls.teacher?.name || "Non assigné"}</td>
                   <td className="px-6 py-4">
                      <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium">{cls.level}</span>
                   </td>
@@ -144,48 +144,50 @@ export default function ClassesPage() {
 
       {showAddModal && (
          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <form onSubmit={handleAddClass}>
-              <Card className="w-full max-w-lg p-6 space-y-4">
-                 <div className="flex justify-between items-center border-b pb-4">
-                    <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
-                    <button type="button" onClick={() => setShowAddModal(false)}><X className="h-5 w-5" /></button>
-                 </div>
-                 <div className="grid grid-cols-1 gap-4">
-                    <div>
-                       <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>
-                       <input name="name" required type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: CM2 - Section A" />
+            <div className="w-full max-w-lg">
+                <form onSubmit={handleAddClass}>
+                <Card className="p-6 space-y-4">
+                    <div className="flex justify-between items-center border-b pb-4">
+                        <h3 className="text-xl font-bold">Ajouter une nouvelle classe</h3>
+                        <button type="button" onClick={() => setShowAddModal(false)}><X className="h-5 w-5" /></button>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
-                          <select name="level" className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                             <option>Préscolaire</option>
-                             <option>Primaire</option>
-                             <option>Collège</option>
-                             <option>Lycée</option>
-                          </select>
-                       </div>
-                       <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
-                          <input name="room" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Salle 304" />
-                       </div>
+                    <div className="grid grid-cols-1 gap-4">
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Nom de la classe</label>
+                        <input name="name" required type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: CM2 - Section A" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
+                            <select name="level" className="w-full px-4 py-2 rounded-lg border border-gray-200">
+                                <option>Préscolaire</option>
+                                <option>Primaire</option>
+                                <option>Collège</option>
+                                <option>Lycée</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
+                            <input name="room" type="text" className="w-full px-4 py-2 rounded-lg border border-gray-200" placeholder="ex: Salle 304" />
+                        </div>
+                        </div>
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Enseignant Titulaire</label>
+                        <select name="teacherId" className="w-full px-4 py-2 rounded-lg border border-gray-200">
+                            <option value="">Sélectionner un enseignant...</option>
+                            {teachers.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+                        </div>
                     </div>
-                    <div>
-                       <label className="block text-sm font-medium text-gray-700 mb-1">Enseignant Titulaire</label>
-                       <select name="teacherId" className="w-full px-4 py-2 rounded-lg border border-gray-200">
-                          <option value="">Sélectionner un enseignant...</option>
-                          {teachers.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                       </select>
+                    <div className="flex justify-end gap-3 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Annuler</Button>
+                        <Button type="submit" className="bg-primary">Enregistrer la classe</Button>
                     </div>
-                 </div>
-                 <div className="flex justify-end gap-3 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Annuler</Button>
-                    <Button type="submit" className="bg-primary">Enregistrer la classe</Button>
-                 </div>
-              </Card>
-            </form>
+                </Card>
+                </form>
+            </div>
          </div>
       )}
     </div>

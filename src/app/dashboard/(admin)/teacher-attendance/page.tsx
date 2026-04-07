@@ -89,7 +89,7 @@ export default function TeacherAttendancePage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                          {teacher.name.charAt(0)}
+                          {teacher.name?.charAt(0) || '?'}
                         </div>
                         <span className="font-medium text-gray-900">{teacher.name}</span>
                       </div>

@@ -83,7 +83,8 @@ export async function register(formData: FormData) {
     LMS: true,
     ANALYTICS: true,
     MESSAGING: true,
-    CANTEEN: false
+    CANTEEN: false,
+    SUBSCRIPTION: true
   }
 
   // SaaS Flow: Create school + admin user

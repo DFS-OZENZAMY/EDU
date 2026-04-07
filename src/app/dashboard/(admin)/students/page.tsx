@@ -2,7 +2,7 @@
 import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { GraduationCap, Users, Plus, Download, Search, Trash2, UserPlus } from "lucide-react"
-import { getAllStudents, getAllClasses } from "@/actions/data"
+import { getAllStudents } from "@/actions/data"
 import { deleteStudent } from "@/actions/admin"
 import Link from "next/link"
 
@@ -23,10 +23,11 @@ export default function StudentsPage() {
     }
   }
 
-  const filteredStudents = students.filter(s =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.class.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredStudents = students.filter(s => {
+    const nameMatch = s.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const classMatch = s.class?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false
+    return nameMatch || classMatch
+  })
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -45,7 +46,7 @@ export default function StudentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
               { label: "Total Élèves", value: students.length, icon: GraduationCap, color: "blue" },
-              { label: "Classes Actives", value: new Set(students.map(s => s.classId)).size, icon: Users, color: "purple" },
+              { label: "Classes Actives", value: new Set(students.map(s => s.classId).filter(id => id !== null)).size, icon: Users, color: "purple" },
           ].map((k, i) => (
               <Card key={i} className="p-6 border-0 shadow-sm rounded-3xl flex items-center gap-5">
                   <div className={`p-4 rounded-2xl bg-${k.color}-50 text-${k.color}-600`}>
@@ -100,7 +101,7 @@ export default function StudentsPage() {
                             </td>
                             <td className="py-5 px-4">
                                 <span className="text-xs font-black px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-tighter italic">
-                                    {student.class.name}
+                                    {student.class?.name || "Sans classe"}
                                 </span>
                             </td>
                             <td className="py-5 px-4 text-xs font-bold text-slate-600">{student.parent?.name || "Non lié"}</td>
