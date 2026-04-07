@@ -44,7 +44,7 @@ export default function DashboardLayout({
     { name: "Classes", href: "/dashboard/classes", icon: Users, show: enabledModules.SIS },
     { name: "Notes & Bulletins", href: "/dashboard/grades", icon: BarChart3, show: enabledModules.LMS },
     { name: "Finances", href: "/dashboard/finance", icon: Wallet, show: enabledModules.FINANCE },
-    { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard, show: true },
+    { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard, show: enabledModules.SUBSCRIPTION },
     { name: "AI Analytics", href: "/dashboard/analytics", icon: BrainCircuit, show: enabledModules.ANALYTICS },
     { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },
     { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, show: enabledModules.CANTEEN },

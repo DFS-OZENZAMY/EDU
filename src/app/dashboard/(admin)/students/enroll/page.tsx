@@ -5,12 +5,13 @@ import { UserPlus, Trash2, Calendar, Phone, CreditCard, Mail, GraduationCap, Plu
 import { enrollParentWithStudents } from "@/actions/enrollment"
 import { getAllClasses } from "@/actions/data"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 export default function EnrollmentPage() {
+  const router = useRouter()
   const [classes, setClasses] = React.useState<any[]>([])
   const [studentRows, setStudentRows] = React.useState<number[]>([1])
   const [isLoading, setIsLoading] = React.useState(false)
-  const [success, setSuccess] = React.useState(false)
 
   React.useEffect(() => {
     getAllClasses().then(setClasses)
@@ -28,27 +29,16 @@ export default function EnrollmentPage() {
     setIsLoading(true)
     const formData = new FormData(e.currentTarget)
     try {
-        await enrollParentWithStudents(formData)
-        setSuccess(true)
-        e.currentTarget.reset()
-        setStudentRows([1])
+        const res = await enrollParentWithStudents(formData)
+        if (res.success) {
+            router.push("/dashboard/students")
+        }
     } catch (err) {
         console.error(err)
     } finally {
         setIsLoading(false)
     }
   }
-
-  if (success) return (
-      <div className="h-[60vh] flex flex-col items-center justify-center space-y-6">
-          <div className="h-20 w-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
-              <Plus className="h-10 w-10" />
-          </div>
-          <h2 className="text-3xl font-black text-slate-900">Inscription Réussie !</h2>
-          <p className="text-slate-500 font-bold">Le parent et ses enfants ont été ajoutés à votre base de données.</p>
-          <button onClick={() => setSuccess(false)} className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs tracking-widest">Nouvelle Inscription</button>
-      </div>
-  )
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">

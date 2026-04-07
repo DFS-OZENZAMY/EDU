@@ -11,6 +11,22 @@ export default function AdminGradesPage() {
     getAllStudents().then(setStudents)
   }, [])
 
+  // Calculate real averages by level
+  const levels = ["Primaire", "Collège", "Lycée"]
+  const levelStats = levels.map(level => {
+      const levelStudents = students.filter(s => s.class?.level === level)
+      const levelGrades = levelStudents.flatMap(s => s.grades || [])
+      const avg = levelGrades.length > 0
+          ? (levelGrades.reduce((acc, g) => acc + g.value, 0) / levelGrades.length).toFixed(2)
+          : "0.00"
+
+      return {
+          level,
+          avg,
+          color: level === "Primaire" ? "bg-blue-600" : level === "Collège" ? "bg-green-600" : "bg-purple-600"
+      }
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -84,11 +100,7 @@ export default function AdminGradesPage() {
             <Card className="p-6">
                <h3 className="font-bold text-gray-900 text-lg mb-4">Moyennes par Niveau</h3>
                <div className="space-y-4">
-                  {[
-                     { level: "Primaire", avg: "15.4", color: "bg-blue-600" },
-                     { level: "Collège", avg: "14.2", color: "bg-green-600" },
-                     { level: "Lycée", avg: "13.8", color: "bg-purple-600" },
-                  ].map((item, i) => (
+                  {levelStats.map((item, i) => (
                      <div key={i} className="space-y-2">
                         <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
                            <span className="text-gray-500">{item.level}</span>

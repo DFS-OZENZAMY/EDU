@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { ShieldCheck, Zap, ToggleLeft, ToggleRight, Layout, Users, GraduationCap, Wallet, ChefHat, MessageSquare, BarChart3 } from "lucide-react"
+import { ShieldCheck, Zap, ToggleLeft, ToggleRight, Layout, Users, GraduationCap, Wallet, ChefHat, MessageSquare, BarChart3, CreditCard } from "lucide-react"
 import { getSchoolModules, updateLocalModules } from "@/actions/school-config"
 import { cn } from "@/lib/utils"
 
@@ -28,8 +28,8 @@ export default function WorkspaceModulesPage() {
     { key: "LMS", name: "Cahier de Texte (LMS)", desc: "Suivi des leçons, devoirs et ressources", icon: Layout, color: "purple" },
     { key: "FINANCE", name: "Module Financier", desc: "Paiements, facturation et suivi des frais", icon: Wallet, color: "emerald" },
     { key: "ANALYTICS", name: "AI Analytics", desc: "Prédiction de performance et alertes décrochage", icon: BarChart3, color: "indigo" },
-    { key: "MESSAGING", name: "Messagerie Interne", desc: "Communication parents-profs sécurisée", icon: MessageSquare, color: "amber" },
     { key: "CANTEEN", name: "Gestion Cantine", desc: "Menus quotidiens et réservations", icon: ChefHat, color: "orange" },
+    { key: "SUBSCRIPTION", name: "Gestion Abonnement", desc: "Facturation SaaS et contrôle de la formule", icon: CreditCard, color: "slate" },
   ]
 
   return (

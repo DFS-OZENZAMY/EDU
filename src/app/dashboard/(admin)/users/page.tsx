@@ -32,10 +32,13 @@ export default function UsersPage() {
       e.preventDefault()
       setIsLoading(true)
       const formData = new FormData(e.currentTarget)
-      await createStaffAccount(formData)
-      await fetchUsers()
+      const res = await createStaffAccount(formData)
+      if (res.success) {
+          await fetchUsers()
+          setIsAdding(false)
+          e.currentTarget.reset()
+      }
       setIsLoading(false)
-      setIsAdding(false)
   }
 
   const filteredUsers = users.filter(u =>
