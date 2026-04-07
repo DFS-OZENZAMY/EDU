@@ -99,6 +99,10 @@ export default function EnrollmentPage() {
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro de Téléphone</label>
                         <input name="parentPhone" type="tel" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="+212 6..." />
                     </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mot de Passe du Compte Parent</label>
+                        <input name="parentPassword" type="password" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="••••••••" />
+                    </div>
                 </div>
             </div>
         </Card>

@@ -92,12 +92,12 @@ export default function StudentsPage() {
                     {filteredStudents.map((student: any) => (
                         <tr key={student.id} className="hover:bg-gray-50 transition-all group">
                             <td className="py-5 px-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center font-black text-xs uppercase">
+                                <Link href={`/dashboard/students/${student.id}`} className="flex items-center gap-3 group/item">
+                                    <div className="h-10 w-10 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center font-black text-xs uppercase group-hover/item:bg-blue-600 group-hover/item:text-white transition-all">
                                         {student.name.charAt(0)}
                                     </div>
-                                    <span className="text-sm font-black text-slate-900">{student.name}</span>
-                                </div>
+                                    <span className="text-sm font-black text-slate-900 group-hover/item:text-blue-600 transition-colors">{student.name}</span>
+                                </Link>
                             </td>
                             <td className="py-5 px-4">
                                 <span className="text-xs font-black px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-tighter italic">

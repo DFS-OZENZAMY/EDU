@@ -15,6 +15,7 @@ export async function enrollParentWithStudents(formData: FormData) {
     const parentEmail = formData.get("parentEmail") as string
     const parentPhone = formData.get("parentPhone") as string
     const parentCin = formData.get("parentCin") as string
+    const parentPassword = formData.get("parentPassword") as string || "password123"
 
     const studentIndicesRaw = formData.get("studentIndices") as string
     const studentIndices = studentIndicesRaw ? studentIndicesRaw.split(',').map(Number) : []
@@ -28,7 +29,7 @@ export async function enrollParentWithStudents(formData: FormData) {
     if (existingParent) {
         parentId = existingParent.id
     } else {
-        const hashedPassword = await bcrypt.hash("password123", 10)
+        const hashedPassword = await bcrypt.hash(parentPassword, 10)
         const parent = await prisma.user.create({
             data: {
                 name: parentName,

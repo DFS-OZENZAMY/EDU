@@ -210,3 +210,57 @@ export async function updateCanteenMenu(formData: FormData) {
     return { error: "Erreur menu cantine." }
   }
 }
+
+export async function getStudentFullProfile(id: number) {
+  try {
+    const session = await getSession()
+    if (!session || !session.schoolId) throw new Error("Non autorisé")
+
+    const student = await prisma.student.findUnique({
+      where: { id, schoolId: session.schoolId },
+      include: {
+        class: { include: { teacher: true } },
+        parent: true,
+        grades: { orderBy: { date: 'desc' } },
+        attendance: { orderBy: { date: 'desc' } }
+      }
+    })
+    return student
+  } catch (error) {
+    return null
+  }
+}
+
+export async function updateStudentProfile(studentId: number, data: any) {
+  try {
+    const session = await verifySchoolAdmin()
+
+    // Update student
+    await prisma.student.update({
+        where: { id: studentId, schoolId: session.schoolId! },
+        data: {
+            name: data.name,
+            birthday: data.birthday ? new Date(data.birthday) : null,
+            classId: data.classId ? parseInt(data.classId) : null
+        }
+    })
+
+    // If parent data provided, update parent user
+    if (data.parentId && (data.parentName || data.parentPhone || data.parentCin)) {
+        await prisma.user.update({
+            where: { id: data.parentId, schoolId: session.schoolId },
+            data: {
+                name: data.parentName,
+                phone: data.parentPhone,
+                cin: data.parentCin
+            }
+        })
+    }
+
+    revalidatePath(`/dashboard/students/${studentId}`)
+    revalidatePath("/dashboard/students")
+    return { success: true }
+  } catch (error) {
+      return { error: "Échec de la mise à jour." }
+  }
+}
