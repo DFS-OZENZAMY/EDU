@@ -1,0 +1,149 @@
+"use client"
+import * as React from "react"
+import { Card } from "@/components/ui/card"
+import { UserPlus, Trash2, Calendar, Phone, CreditCard, Mail, GraduationCap, Plus, Loader2 } from "lucide-react"
+import { enrollParentWithStudents } from "@/actions/enrollment"
+import { getAllClasses } from "@/actions/data"
+import { Button } from "@/components/ui/button"
+
+export default function EnrollmentPage() {
+  const [classes, setClasses] = React.useState<any[]>([])
+  const [studentRows, setStudentRows] = React.useState<number[]>([1])
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [success, setSuccess] = React.useState(false)
+
+  React.useEffect(() => {
+    getAllClasses().then(setClasses)
+  }, [])
+
+  const addStudent = () => setStudentRows([...studentRows, studentRows.length + 1])
+  const removeStudent = (id: number) => {
+    if (studentRows.length > 1) {
+        setStudentRows(studentRows.filter(r => r !== id))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    try {
+        await enrollParentWithStudents(formData)
+        setSuccess(true)
+        e.currentTarget.reset()
+        setStudentRows([1])
+    } catch (err) {
+        console.error(err)
+    } finally {
+        setIsLoading(false)
+    }
+  }
+
+  if (success) return (
+      <div className="h-[60vh] flex flex-col items-center justify-center space-y-6">
+          <div className="h-20 w-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
+              <Plus className="h-10 w-10" />
+          </div>
+          <h2 className="text-3xl font-black text-slate-900">Inscription Réussie !</h2>
+          <p className="text-slate-500 font-bold">Le parent et ses enfants ont été ajoutés à votre base de données.</p>
+          <button onClick={() => setSuccess(false)} className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs tracking-widest">Nouvelle Inscription</button>
+      </div>
+  )
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
+      <div className="border-b border-gray-200 pb-8">
+        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Inscription Parent & Enfants</h2>
+        <p className="text-slate-500 font-bold mt-1 uppercase text-xs tracking-widest">Processus d'enrôlement multi-étapes unifié</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Parent Info */}
+        <Card className="p-10 border-0 shadow-xl shadow-slate-200/50 rounded-[40px] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-10 opacity-5">
+                <Phone className="h-32 w-32" />
+            </div>
+            <div className="relative z-10 space-y-8">
+                <div className="flex items-center gap-4 mb-2">
+                    <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                        <CreditCard className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Informations du Parent</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Complet du Parent</label>
+                        <input name="parentName" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="ex: Karim Mansouri" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Carte d'Identité (CIN)</label>
+                        <input name="parentCin" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="ex: BE123456" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email de Contact</label>
+                        <input name="parentEmail" type="email" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="parent@email.com" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro de Téléphone</label>
+                        <input name="parentPhone" type="tel" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="+212 6..." />
+                    </div>
+                </div>
+            </div>
+        </Card>
+
+        {/* Student Rows */}
+        <div className="space-y-8">
+            <div className="flex justify-between items-center px-4">
+                <h3 className="text-xl font-black text-slate-900 tracking-tight">Liste des Enfants</h3>
+                <button type="button" onClick={addStudent} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all">
+                    <Plus className="h-4 w-4" /> AJOUTER UN ENFANT
+                </button>
+            </div>
+
+            {studentRows.map((id, index) => (
+                <Card key={id} className="p-10 border-0 shadow-lg shadow-slate-100 rounded-[32px] relative group border-l-8 border-blue-500">
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-black text-xs italic">{index + 1}</div>
+                            <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Élève #{index + 1}</span>
+                        </div>
+                        {studentRows.length > 1 && (
+                            <button type="button" onClick={() => removeStudent(id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                                <Trash2 className="h-5 w-5" />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom Complet de l'Élève</label>
+                            <input name={`studentName_${id}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" placeholder="Nom de l'enfant" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Date de Naissance</label>
+                            <input name={`studentBday_${id}`} type="date" required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Classe d'Affectation</label>
+                            <select name={`studentClass_${id}`} required className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/5 focus:bg-white transition-all appearance-none cursor-pointer">
+                                <option value="">Choisir une classe</option>
+                                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </Card>
+            ))}
+        </div>
+
+        <Button type="submit" className="w-full bg-slate-900 text-white font-black py-8 rounded-[32px] shadow-2xl shadow-slate-900/10 hover:bg-slate-800 transition-all active:scale-[0.98]" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
+                <span className="flex items-center justify-center gap-3">
+                    FINALISER L'INSCRIPTION <GraduationCap className="h-6 w-6" />
+                </span>
+            )}
+        </Button>
+      </form>
+    </div>
+  )
+}

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import bcrypt from "bcryptjs"
 import { encrypt } from "@/lib/auth"
-import { Role } from "@prisma/client"
+import { Role, SubscriptionTier } from "@prisma/client"
 
 export async function login(formData: FormData) {
   const email = formData.get("email") as string
@@ -20,6 +20,11 @@ export async function login(formData: FormData) {
   // Basic role check
   if (!user || user.role !== roleStr) {
     return { error: "Identifiants invalides ou rôle incorrect" }
+  }
+
+  // Check if school or user is active
+  if (!user.isActive || (user.school && !user.school.isActive)) {
+    return { error: "Ce compte ou cet établissement a été désactivé par l'administrateur SaaS." }
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -58,6 +63,7 @@ export async function register(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const name = formData.get("name") as string
+  const phone = formData.get("phone") as string
   const schoolName = formData.get("schoolName") as string
 
   const existingUser = await prisma.user.findUnique({
@@ -70,9 +76,26 @@ export async function register(formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 10)
 
+  // Initial Modules Set
+  const defaultModules = {
+    SIS: true,
+    FINANCE: true,
+    LMS: true,
+    ANALYTICS: true,
+    MESSAGING: true,
+    CANTEEN: false
+  }
+
   // SaaS Flow: Create school + admin user
   const school = await prisma.school.create({
-    data: { name: schoolName }
+    data: {
+        name: schoolName,
+        ownerName: name,
+        ownerEmail: email,
+        ownerPhone: phone,
+        plan: SubscriptionTier.FREE,
+        enabledModules: defaultModules
+    }
   })
 
   const user = await prisma.user.create({
@@ -80,6 +103,7 @@ export async function register(formData: FormData) {
       email,
       password: hashedPassword,
       name,
+      phone,
       role: Role.SCHOOL_ADMIN,
       schoolId: school.id
     },
@@ -112,6 +136,8 @@ export async function getSessionUser() {
       include: { school: true }
     })
     if (!user) return null
+    if (!user.isActive || (user.school && !user.school.isActive)) return null
+
     const { password, ...userWithoutPassword } = user
     return userWithoutPassword
   } catch (error) {

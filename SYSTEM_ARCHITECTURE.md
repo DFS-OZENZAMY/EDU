@@ -11,86 +11,49 @@ The platform follows a **Multi-tenant Cloud-Native** architecture.
 ### Data Isolation (Database Level)
 We use a **Single Database, Shared Schema** approach with strict **Row-Level Filtering**.
 - Every table (User, Class, Student, etc.) includes a `schoolId` column.
-- Server-side middleware and Prisma middleware (mocked via server actions) ensure that queries are always scoped to the authenticated user's `schoolId`.
+- Server-side middleware and Prisma ensure that queries are always scoped to the authenticated user's `schoolId`.
+- **Active Status Check:** Both user and school-level `isActive` flags are checked during session validation to allow instant platform-wide deactivation.
 
 ### Frontend Stack (Next.js 15)
 - **App Router:** For optimized routing and server components.
 - **Server Actions:** For secure, type-safe backend interaction without dedicated API endpoints.
-- **Tailwind CSS:** For the high-density SaaS UI.
-- **Framer Motion:** For fluid state transitions and animations.
-
-### Backend Infrastructure
-- **Authentication:** JWT-based sessions using HttpOnly cookies (via `jose`).
-- **ORM:** Prisma for type-safe database access to PostgreSQL.
-- **Storage:** AWS S3 (for student documents, school logos).
-- **Caching:** Redis (future implementation for performance-heavy analytics).
+- **Dynamic Workspaces:** Sidebar and dashboards render modules conditionally based on school-level settings (`enabledModules` JSON).
 
 ---
 
 ## 2. Database Schema (Core Models)
 
 ### Multi-Tenancy Core
-- `School`: Root entity for each tenant. Contains domain, logo, and subscription plan.
-- `Subscription`: History of billing and tier status (Free, Premium, etc.).
+- `School`: Root entity for each tenant. Contains owner contact info (Email, Phone), `enabledModules` configuration, and `isActive` status.
+- `Subscription`: Detailed history of billing and tier status.
 
-### Role-Based Access Control (RBAC)
-- `Role Enum`: SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT, STAFF, ACCOUNTANT.
-
-### Academic Core
-- `User`: Shared profile with role-specific attributes.
-- `Student`: Academic profile linked to a Class and Parent.
-- `Class`: Grouping of students under a specific teacher and level.
-- `Grade`: Student results with subject and teacher observations.
-- `Attendance`: Presence/Absence logs with real-time parent notifications.
-
-### Communication & Finance
-- `Message`: Internal peer-to-peer messaging between users.
-- `Notification`: Platform-wide alerts for grades, messages, and absences.
-- `Fee`: Tuition management per parent, with payment status tracking.
+### User & Academic Profile
+- `User`: Enhanced with `phone`, `cin` (ID Card), and `isActive`.
+- `Student`: Linked to a Parent and Class; includes `birthday` and academic history.
 
 ---
 
-## 3. API Design (Server Actions)
+## 3. Advanced Workflows
 
-Instead of traditional REST, we use **Next.js Server Actions** for better DX and security.
+### Unified Enrollment (`src/actions/enrollment.ts`)
+An atomic operation that creates a Parent account (if it doesn't exist) and registers multiple students in a single transaction. Captures critical data: CIN, Phone, Birthdays.
 
-### Auth Actions (`src/actions/auth.ts`)
-- `login(formData)`: Validates credentials and sets a tenant-aware JWT cookie.
-- `register(formData)`: Provisions a new `School` instance and its first `SCHOOL_ADMIN`.
-
-### Super Admin Actions (`src/actions/super-admin.ts`)
-- `getPlatformStats()`: Global KPIs (Total schools, active subs, server health).
-- `getAllSchools()`: List all tenants for global monitoring.
-- `updateSchoolPlan(schoolId, tier)`: Remote upgrade/downgrade of school instances.
-
-### Admin/Finance Actions (`src/actions/finance.ts`)
-- `getFinancialStats()`: Revenue stream analytics and tuition KPIs for a specific school.
-- `markAsPaid(feeId)`: Securely update payment status.
+### Modular Control
+- **Super Admin Level:** Remote activation/deactivation of modules (SIS, LMS, Finance, Analytics, Canteen) for any school instance.
+- **School Admin Level:** Local configuration of workspace modules to customize the dashboard for their specific needs.
 
 ---
 
 ## 4. MVP Roadmap
 
 ### Phase 1: SaaS Core (Completed)
-- [x] Multi-tenant PostgreSQL Schema.
-- [x] Secure JWT Session Management.
-- [x] Super Admin & School Admin Dashboards.
+- [x] Multi-tenant PostgreSQL Schema with owner tracking.
+- [x] Secure JWT Session Management with deactivation support.
+- [x] Unified Parent/Student Enrollment workflow.
+- [x] Modular Workspace toggles for School Admins.
+- [x] Platform-wide monitoring for Super Admins.
 
-### Phase 2: Academic Suite
-- [x] Student SIS & Class Management.
-- [x] Gradebook & Attendance.
-- [x] internal Messaging & Notifications.
-
-### Phase 3: Commercial & Expansion
-- [ ] Stripe Integration for SaaS Subscriptions.
-- [ ] SMS Gateway Integration for Moroccan operators.
-- [ ] Whitelabeling (Custom domains for schools).
+### Phase 2: Commercial & Expansion
+- [ ] Stripe Integration for automated SaaS billing.
+- [ ] Fine-grained Role Permissions (Role-Module mapping).
 - [ ] Mobile App (React Native).
-
----
-
-## 5. Deployment Architecture (Vercel + Supabase)
-
-- **Vercel:** Hosts the Next.js application, handling edge middleware and global delivery.
-- **Supabase (PostgreSQL):** Robust relational storage with connection pooling for high traffic.
-- **Environment Management:** Strict separation of `JWT_SECRET`, `DATABASE_URL`, and `DIRECT_URL`.

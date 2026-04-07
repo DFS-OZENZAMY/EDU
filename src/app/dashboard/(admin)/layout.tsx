@@ -15,29 +15,14 @@ import {
   ChefHat,
   BrainCircuit,
   BookOpen,
-  ShieldCheck
+  ShieldCheck,
+  Layout,
+  MessageSquare
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-
-const sidebarNavigation = [
-  { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard },
-  { name: "Utilisateurs", href: "/dashboard/users", icon: Users },
-  { name: "Liaisons", href: "/dashboard/link-accounts", icon: GraduationCap },
-  { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar },
-  { name: "Élèves", href: "/dashboard/students", icon: GraduationCap },
-  { name: "Classes", href: "/dashboard/classes", icon: Users },
-  { name: "Notes & Bulletins", href: "/dashboard/grades", icon: BarChart3 },
-  { name: "Emploi du temps", href: "/dashboard/calendar", icon: Calendar },
-  { name: "Finances", href: "/dashboard/finance", icon: Wallet },
-  { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard },
-  { name: "AI Analytics", href: "/dashboard/analytics", icon: BrainCircuit },
-  { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen },
-  { name: "Personnel", href: "/dashboard/staff", icon: ShieldCheck },
-  { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat },
-  { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
-]
+import { getSchoolModules } from "@/actions/school-config"
 
 export default function DashboardLayout({
   children,
@@ -46,10 +31,31 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const [user, setUser] = React.useState<any>(null)
+  const [enabledModules, setEnabledModules] = React.useState<any>({})
 
   React.useEffect(() => {
     getSessionUser().then(setUser)
+    getSchoolModules().then(setEnabledModules)
   }, [])
+
+  const sidebarNavigation = [
+    { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard, show: true },
+    { name: "Utilisateurs", href: "/dashboard/users", icon: Users, show: true },
+    { name: "Liaisons", href: "/dashboard/link-accounts", icon: GraduationCap, show: enabledModules.SIS },
+    { name: "Pointage Profs", href: "/dashboard/teacher-attendance", icon: Calendar, show: true },
+    { name: "Élèves", href: "/dashboard/students", icon: GraduationCap, show: enabledModules.SIS },
+    { name: "Classes", href: "/dashboard/classes", icon: Users, show: enabledModules.SIS },
+    { name: "Notes & Bulletins", href: "/dashboard/grades", icon: BarChart3, show: enabledModules.LMS },
+    { name: "Emploi du temps", href: "/dashboard/calendar", icon: Calendar, show: enabledModules.LMS },
+    { name: "Finances", href: "/dashboard/finance", icon: Wallet, show: enabledModules.FINANCE },
+    { name: "Abonnement", href: "/dashboard/subscription", icon: CreditCard, show: true },
+    { name: "AI Analytics", href: "/dashboard/analytics", icon: BrainCircuit, show: enabledModules.ANALYTICS },
+    { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },
+    { name: "Personnel", href: "/dashboard/staff", icon: ShieldCheck, show: true },
+    { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, show: enabledModules.CANTEEN },
+    { name: "Modules", href: "/dashboard/settings/modules", icon: Layout, show: true },
+    { name: "Paramètres", href: "/dashboard/settings", icon: Settings, show: true },
+  ]
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
@@ -62,13 +68,13 @@ export default function DashboardLayout({
               <span className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">SaaS <span className="text-primary">EDU</span></span>
             </Link>
           </div>
-          <nav className="flex-1 px-4 py-8 space-y-2">
-            {sidebarNavigation.map((item) => (
+          <nav className="flex-1 px-4 py-8 space-y-1">
+            {sidebarNavigation.filter(n => n.show).map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-4 px-3 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
+                  "flex items-center gap-4 px-3 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
                   pathname === item.href
                     ? "bg-primary text-white shadow-xl shadow-primary/20"
                     : "text-slate-400 hover:bg-gray-50 hover:text-primary"
@@ -79,10 +85,10 @@ export default function DashboardLayout({
               </Link>
             ))}
           </nav>
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-100">
             <button
               onClick={() => logout()}
-              className="w-full flex items-center gap-4 px-3 py-3 text-xs font-black uppercase tracking-widest text-red-500 rounded-xl hover:bg-red-50 transition-all"
+              className="w-full flex items-center gap-4 px-3 py-3 text-[10px] font-black uppercase tracking-widest text-red-500 rounded-xl hover:bg-red-50 transition-all"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               Déconnexion
@@ -95,7 +101,7 @@ export default function DashboardLayout({
       <div className="flex flex-col flex-1 md:pl-64 overflow-hidden">
         <DashboardHeader
           user={user}
-          navigation={sidebarNavigation}
+          navigation={sidebarNavigation.filter(n => n.show)}
           roleLabel="ADMIN"
           roleColor="bg-primary"
         />

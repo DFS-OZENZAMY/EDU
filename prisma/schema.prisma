@@ -33,6 +33,17 @@ model School {
   city          String?
   logo          String?
   plan          SubscriptionTier  @default(FREE)
+
+  // SaaS Owner tracking
+  ownerName     String?
+  ownerEmail    String?
+  ownerPhone    String?
+
+  // Modular features
+  enabledModules Json?             @default("{}") // School-wide toggles
+  rolePermissions Json?            @default("{}") // Role-specific module access
+
+  isActive      Boolean           @default(true)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -51,19 +62,26 @@ model Subscription {
   stripeId    String?  @unique
   status      String   // "active", "canceled", "past_due"
   tier        SubscriptionTier
+  amount      Float?
   startDate   DateTime @default(now())
   endDate     DateTime?
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(STUDENT)
-  schoolId  Int?
-  school    School?  @relation(fields: [schoolId], references: [id])
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String
+  role        Role     @default(STUDENT)
+
+  // Advanced Profile
+  phone       String?
+  cin         String?   // Card of Identity
+  isActive    Boolean   @default(true)
+
+  schoolId    Int?
+  school      School?  @relation(fields: [schoolId], references: [id])
+  createdAt   DateTime @default(now())
 
   // Specific relations
   teacherClasses Class[]  @relation("TeacherToClass")
@@ -84,25 +102,29 @@ model ClockIn {
 }
 
 model Fee {
-  id        Int      @id @default(autoincrement())
-  parentId  Int
-  parent    User     @relation(fields: [parentId], references: [id])
-  month     String
-  amount    Float
+  id          Int      @id @default(autoincrement())
+  parentId    Int
+  parent      User     @relation(fields: [parentId], references: [id])
+  month       String
+  amount      Float
   status    String   // "PAID", "PENDING"
   paidAt    DateTime?
   invoiceUrl String?
+  createdAt DateTime @default(now())
 }
 
 model Student {
   id        Int      @id @default(autoincrement())
   name      String
+  birthday  DateTime?
+
   schoolId  Int
   school    School   @relation(fields: [schoolId], references: [id])
   classId   Int
   class     Class    @relation(fields: [classId], references: [id])
   parentId  Int?
   parent    User?    @relation("ParentToStudent", fields: [parentId], references: [id])
+
   grades    Grade[]
   attendance Attendance[]
 }

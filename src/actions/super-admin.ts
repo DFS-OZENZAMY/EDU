@@ -1,7 +1,8 @@
 "use server"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
-import { Role, SubscriptionTier } from "@prisma/client"
+import { Role, SubscriptionTier, Prisma } from "@prisma/client"
+import { revalidatePath } from "next/cache"
 
 async function verifySuperAdmin() {
   const session = await getSession()
@@ -13,13 +14,10 @@ async function verifySuperAdmin() {
 
 export async function getPlatformStats() {
   await verifySuperAdmin()
-  const [schoolsCount, usersCount, subscriptions] = await Promise.all([
+  const [schoolsCount, usersCount, activeSubsCount] = await Promise.all([
     prisma.school.count(),
     prisma.user.count(),
-    prisma.subscription.findMany({
-        where: { status: 'active' },
-        include: { school: true }
-    })
+    prisma.school.count({ where: { plan: { not: 'FREE' } } })
   ])
 
   // Aggregate stats by tier
@@ -31,7 +29,7 @@ export async function getPlatformStats() {
   return {
     totalSchools: schoolsCount,
     totalUsers: usersCount,
-    activeSubscriptions: subscriptions.length,
+    activeSubscriptions: activeSubsCount,
     tierStats: tierStats.map(s => ({ name: s.plan, value: s._count.id })),
     recentSchools: await prisma.school.findMany({
         orderBy: { createdAt: 'desc' },
@@ -58,5 +56,26 @@ export async function updateSchoolPlan(schoolId: number, plan: SubscriptionTier)
     where: { id: schoolId },
     data: { plan }
   })
+  revalidatePath("/dashboard/super/schools")
   return { success: true }
+}
+
+export async function toggleSchoolStatus(schoolId: number, isActive: boolean) {
+    await verifySuperAdmin()
+    await prisma.school.update({
+        where: { id: schoolId },
+        data: { isActive }
+    })
+    revalidatePath("/dashboard/super/schools")
+    return { success: true }
+}
+
+export async function updateSchoolModules(schoolId: number, modules: any) {
+    await verifySuperAdmin()
+    await prisma.school.update({
+        where: { id: schoolId },
+        data: { enabledModules: modules }
+    })
+    revalidatePath("/dashboard/super/schools")
+    return { success: true }
 }
