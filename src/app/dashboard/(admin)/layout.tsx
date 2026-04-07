@@ -49,6 +49,7 @@ export default function DashboardLayout({
     { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },
     { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, show: enabledModules.CANTEEN },
     { name: "Modules", href: "/dashboard/settings/modules", icon: Layout, show: true },
+    { name: "Mon Profil", href: "/dashboard/admin/admin-profile", icon: Users, show: true },
     { name: "Paramètres", href: "/dashboard/settings", icon: Settings, show: true },
   ]
 

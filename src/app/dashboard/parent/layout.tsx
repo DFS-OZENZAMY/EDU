@@ -25,7 +25,7 @@ const sidebarNavigation = [
   { name: "Emploi du temps", href: "/dashboard/parent/calendar", icon: Calendar },
   { name: "Paiements & Frais", href: "/dashboard/parent/finance", icon: Wallet },
   { name: "Message à l'école", href: "/dashboard/parent/messages", icon: MessageSquare },
-  { name: "Mon Profil", href: "/dashboard/profile", icon: LayoutDashboard },
+  { name: "Mon Profil", href: "/dashboard/parent/profile", icon: LayoutDashboard },
 ]
 
 export default function ParentLayout({

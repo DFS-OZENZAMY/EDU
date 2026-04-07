@@ -1,150 +1,164 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Wallet, CreditCard, Receipt, TrendingUp, AlertTriangle, CheckCircle2, ChevronRight } from "lucide-react"
+import { Wallet, CreditCard, Receipt, TrendingUp, AlertTriangle, CheckCircle2, ChevronRight, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getSessionUser } from "@/actions/auth"
-import { prisma } from "@/lib/prisma"
+import { getMyData } from "@/actions/data"
+import { cn } from "@/lib/utils"
 
 export default function ParentFinancePage() {
   const [fees, setFees] = React.useState<any[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
-    getSessionUser().then(async (user: any) => {
-        if (user) {
-            const res = await prisma.fee.findMany({
-                where: { parentId: user.id },
-                orderBy: { id: 'desc' }
-            })
-            setFees(res)
+    getMyData().then((res: any) => {
+        if (res?.students?.[0]?.parent?.fees) {
+            setFees(res.students[0].parent.fees)
         }
+        setIsLoading(false)
     })
   }, [])
+
+  if (isLoading) return <div className="h-full flex items-center justify-center font-black text-slate-300 animate-pulse uppercase tracking-widest">Calcul du solde...</div>
+
+  const totalPaid = fees.filter(f => f.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0)
+  const pending = fees.filter(f => f.status === 'PENDING').reduce((acc, curr) => acc + curr.amount, 0)
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Suivi Financier</h2>
-        <p className="text-gray-500">Gérez vos règlements et accédez à vos factures.</p>
+    <div className="space-y-10 animate-in fade-in duration-700 pb-20 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-slate-100 pb-8">
+        <div>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Finance & Règlements</h2>
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-2 flex items-center gap-2">
+            <span className="h-2 w-2 bg-emerald-500 rounded-full" /> État de compte session 2026
+          </p>
+        </div>
+        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+            <Download className="h-4 w-4" /> Relevé Annuel
+        </button>
       </div>
 
-      {/* Financial Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-         <Card className="p-6 bg-primary text-white border-0 shadow-lg relative overflow-hidden group transition-all hover:scale-[1.02]">
-            <div className="relative z-10 flex flex-col justify-between h-full">
-               <div className="flex justify-between items-start mb-6">
-                  <div className="h-10 w-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                     <Wallet className="h-6 w-6" />
-                  </div>
-                  <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-full uppercase">Avril 2024</span>
-               </div>
-               <div>
-                  <p className="text-sm text-primary-100 mb-1">Reste à payer</p>
-                  <p className="text-3xl font-extrabold tracking-tight">0.00 MAD</p>
-               </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+         <Card className="p-8 bg-slate-900 text-white border-0 shadow-2xl rounded-[32px] relative overflow-hidden group">
+            <div className="relative z-10">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Total Payé (Année)</p>
+                <div className="flex items-end gap-2">
+                    <p className="text-4xl font-black">{totalPaid.toLocaleString()} <span className="text-sm font-bold text-slate-500 tracking-normal">DH</span></p>
+                </div>
+                <div className="mt-8 flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                    <CheckCircle2 className="h-3 w-3" /> Compte Sain
+                </div>
             </div>
-            <TrendingUp className="absolute -bottom-6 -right-6 h-32 w-32 text-white/10 rotate-12 transition-transform group-hover:scale-110" />
+            <div className="absolute right-0 bottom-0 p-6 opacity-5">
+                <TrendingUp className="h-24 w-24 text-white" />
+            </div>
          </Card>
 
-         <Card className="p-6 border-l-4 border-l-green-500 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-6">
-               <div className="h-10 w-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
-                  <CheckCircle2 className="h-6 w-6" />
-               </div>
-               <div>
-                  <h4 className="font-bold text-gray-900 leading-tight">Total Payé</h4>
-                  <p className="text-xs text-gray-500 uppercase font-medium">Année 2023-24</p>
-               </div>
+         <Card className="p-8 border-0 shadow-sm rounded-[32px] bg-white flex flex-col justify-between group hover:shadow-xl transition-all">
+            <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Solde en Attente</p>
+                <p className={cn("text-3xl font-black tracking-tighter", pending > 0 ? "text-amber-500" : "text-slate-900")}>
+                    {pending.toLocaleString()} <span className="text-sm font-bold text-slate-300 tracking-normal">DH</span>
+                </p>
             </div>
-            <p className="text-2xl font-bold text-green-600">9,850.00 MAD</p>
+            <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Prochaine Échéance</span>
+                <span className="text-[10px] font-bold text-slate-900">01 Juillet 2026</span>
+            </div>
          </Card>
 
-         <Card className="p-6 border-l-4 border-l-blue-500 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center gap-3 mb-6">
-               <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                  <CreditCard className="h-6 w-6" />
-               </div>
-               <div>
-                  <h4 className="font-bold text-gray-900 leading-tight">Prochaine Échéance</h4>
-                  <p className="text-xs text-gray-500 uppercase font-medium">Le 01/05/2024</p>
-               </div>
+         <Card className="p-8 border-0 shadow-sm rounded-[32px] bg-white flex flex-col justify-between group hover:shadow-xl transition-all">
+            <div className="space-y-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dernier Règlement</p>
+                <p className="text-xl font-black text-slate-900 uppercase">Juin 2026</p>
             </div>
-            <p className="text-2xl font-bold text-blue-600">1,200.00 MAD</p>
+            <div className="mt-6 pt-6 border-t border-slate-50">
+                <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-2">
+                    VOIR LE REÇU <ChevronRight className="h-3 w-3" />
+                </button>
+            </div>
          </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Transaction History */}
-         <Card className="lg:col-span-2 overflow-hidden border-gray-100">
-            <div className="p-5 border-b flex items-center justify-between">
-               <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-primary" />
-                  Historique des Règlements
-               </h4>
-               <Button variant="outline" size="sm" className="text-xs">Télécharger le relevé</Button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+         <Card className="lg:col-span-2 overflow-hidden border-0 shadow-sm rounded-[40px] bg-white">
+            <div className="p-8 border-b border-slate-50 font-black text-slate-900 tracking-tight flex items-center gap-4 uppercase text-sm">
+               <div className="h-10 w-10 bg-primary/5 rounded-xl flex items-center justify-center">
+                   <Receipt className="h-5 w-5 text-primary" />
+               </div>
+               Journal des Transactions
             </div>
             <div className="overflow-x-auto">
                <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-[10px] text-gray-400 uppercase font-black">
-                     <tr>
-                        <th className="px-6 py-4">Désignation</th>
-                        <th className="px-6 py-4 text-right">Montant</th>
-                        <th className="px-6 py-4">Date</th>
-                        <th className="px-6 py-4">Mode</th>
-                        <th className="px-6 py-4">Statut</th>
-                        <th className="px-6 py-4">Actions</th>
+                  <thead className="bg-slate-50/50">
+                     <tr className="text-[10px] uppercase font-black text-slate-400 border-b border-slate-50 tracking-[0.2em]">
+                        <th className="px-10 py-5">Période</th>
+                        <th className="px-10 py-5">Montant</th>
+                        <th className="px-10 py-5">Date Paiement</th>
+                        <th className="px-10 py-5 text-right">Statut</th>
                      </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-slate-50">
                      {fees.map((t) => (
-                        <tr key={t.id} className="hover:bg-gray-50/80 transition-colors">
-                           <td className="px-6 py-4 font-bold text-sm text-gray-900">Frais de scolarité - {t.month}</td>
-                           <td className="px-6 py-4 text-sm text-right font-black text-gray-900">{t.amount} DH</td>
-                           <td className="px-6 py-4 text-[11px] font-medium text-gray-500">{t.paidAt ? new Date(t.paidAt).toLocaleDateString() : '-'}</td>
-                           <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase tracking-wider">Virement</td>
-                           <td className="px-6 py-4">
-                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${t.status === 'PAID' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                 <div className={`h-1.5 w-1.5 rounded-full ${t.status === 'PAID' ? 'bg-green-600' : 'bg-red-600'}`} />
-                                 {t.status === 'PAID' ? 'Payé' : 'En attente'}
-                              </span>
+                        <tr key={t.id} className="hover:bg-slate-50/50 transition-all group">
+                           <td className="px-10 py-6">
+                               <p className="font-black text-slate-900 text-sm uppercase tracking-tight">Scolarité • {t.month}</p>
                            </td>
-                           <td className="px-6 py-4 text-right">
-                              <button className="p-2 text-gray-400 hover:text-primary transition-colors hover:bg-primary/5 rounded-lg">
-                                 <ChevronRight className="h-4 w-4" />
-                              </button>
+                           <td className="px-10 py-6">
+                               <span className="text-base font-black text-slate-900">{t.amount} DH</span>
+                           </td>
+                           <td className="px-10 py-6">
+                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                   {t.paidAt ? new Date(t.paidAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'En attente'}
+                               </p>
+                           </td>
+                           <td className="px-10 py-6 text-right">
+                                <span className={cn(
+                                    "text-[9px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border inline-flex items-center gap-2",
+                                    t.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
+                                )}>
+                                    <div className={cn("h-1.5 w-1.5 rounded-full", t.status === 'PAID' ? "bg-emerald-500" : "bg-red-500")} />
+                                    {t.status === 'PAID' ? 'REGLÉ' : 'À PAYER'}
+                                </span>
                            </td>
                         </tr>
                      ))}
+                     {fees.length === 0 && (
+                         <tr>
+                             <td colSpan={4} className="px-10 py-20 text-center text-slate-300">
+                                 <p className="text-[10px] font-black uppercase tracking-widest">Aucune transaction enregistrée</p>
+                             </td>
+                         </tr>
+                     )}
                   </tbody>
                </table>
             </div>
          </Card>
 
-         {/* Alert & Payment Info */}
-         <div className="space-y-6">
-            <Card className="p-6 border-0 bg-amber-50 border-l-4 border-l-amber-500 shadow-sm relative group overflow-hidden">
-               <AlertTriangle className="absolute -bottom-2 -right-2 h-16 w-16 text-amber-100 -rotate-12 transition-transform group-hover:scale-110" />
+         <div className="space-y-10">
+            <Card className="p-10 border-0 bg-blue-50/50 border-l-8 border-blue-600 shadow-sm relative overflow-hidden">
                <div className="relative z-10">
-                  <h4 className="font-bold text-amber-900 mb-2">Informations de Paiement</h4>
-                  <p className="text-xs text-amber-800/80 leading-relaxed mb-4 font-medium">
-                     Nous privilégions les paiements par virement bancaire pour plus de rapidité et de traçabilité.
+                  <h4 className="font-black text-blue-900 uppercase tracking-tight mb-4">Informations RIB</h4>
+                  <p className="text-xs text-blue-800 leading-relaxed mb-8 font-bold italic">
+                     Utilisez ce RIB pour vos virements bancaires. Mentionnez le nom de l'enfant dans le motif.
                   </p>
-                  <div className="space-y-2 mb-4">
-                     <div className="bg-white/50 p-3 rounded-xl border border-amber-200">
-                        <p className="text-[10px] font-bold text-amber-900 uppercase mb-1">RIB Établissement</p>
-                        <p className="text-xs font-black text-amber-950 font-mono tracking-tight">007 123 4567890123 45</p>
-                     </div>
+                  <div className="bg-white p-6 rounded-[24px] border border-blue-100 shadow-inner">
+                     <p className="text-[8px] font-black text-blue-400 uppercase mb-2 tracking-[0.2em]">RIB Établissement (SOCIÉTÉ GÉNÉRALE)</p>
+                     <p className="text-sm font-black text-slate-900 font-mono tracking-tighter">007 123 4567890123 4567 8901</p>
                   </div>
-                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-xs font-bold h-9">Soumettre une preuve de virement</Button>
+                  <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all">
+                      ENVOYER PREUVE DE VIREMENT
+                  </button>
                </div>
             </Card>
 
-            <Card className="p-5 border-0 shadow-xl bg-slate-900 text-white flex items-center justify-between group cursor-pointer transition-transform hover:-translate-y-1">
+            <Card className="p-10 bg-slate-900 text-white border-0 shadow-2xl rounded-[40px] flex items-center justify-between group cursor-pointer transition-all hover:scale-[1.02]">
                <div className="space-y-1">
-                  <h4 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors">Besoin d'aide ?</h4>
-                  <p className="text-[10px] text-slate-400 font-medium">Contactez le service comptabilité</p>
+                  <h4 className="font-black text-sm uppercase tracking-widest group-hover:text-primary transition-colors">Besoin d'aide ?</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Contactez la Comptabilité</p>
                </div>
-               <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center transition-all group-hover:bg-primary/20">
-                  <ChevronRight className="h-5 w-5 text-primary" />
+               <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all group-hover:bg-primary group-hover:border-primary">
+                  <ChevronRight className="h-6 w-6 text-white" />
                </div>
             </Card>
          </div>

@@ -1,15 +1,16 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle } from "lucide-react"
+import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle, Clock, TrendingUp, ChefHat } from "lucide-react"
 import { getMyData } from "@/actions/data"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export default function ParentDashboardPage() {
   const [data, setData] = React.useState<any[]>([])
-
   const [notifications, setNotifications] = React.useState<any[]>([])
   const [canteen, setCanteen] = React.useState<any>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     getMyData().then((res: any) => {
@@ -18,152 +19,219 @@ export default function ParentDashboardPage() {
             setNotifications(res.notifications || [])
             setCanteen(res.canteenMenu)
         }
+        setIsLoading(false)
     })
   }, [])
 
-  const student = data[0]
+  if (isLoading) return <div className="h-full flex items-center justify-center font-black text-slate-300 animate-pulse uppercase tracking-widest">Synchronisation des données...</div>
 
   if (data.length === 0) {
     return (
-        <div className="space-y-8 p-2 md:p-0">
-            <div className="bg-blue-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row justify-between items-center overflow-hidden relative shadow-lg">
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="bg-slate-900 rounded-[40px] p-10 text-white flex flex-col md:flex-row justify-between items-center overflow-hidden relative shadow-2xl">
                 <div className="relative z-10 text-center md:text-left">
-                    <h2 className="text-xl md:text-2xl font-bold mb-2">Bienvenue sur votre espace Parent !</h2>
-                    <p className="text-blue-100 max-w-md italic text-sm">Votre compte est actif. Veuillez contacter l'administration pour lier le dossier de votre enfant à votre compte.</p>
+                    <h2 className="text-3xl font-black mb-2 tracking-tight">Bienvenue, Parent !</h2>
+                    <p className="text-slate-400 max-w-md font-bold text-sm italic">Votre instance SaaS est active. Veuillez patienter pendant que l'administration lie le dossier de vos enfants.</p>
                 </div>
-                <Users className="h-24 w-24 md:h-32 md:w-32 text-white/10 absolute -right-4 -bottom-4 rotate-12" />
+                <div className="absolute right-0 top-0 p-10 opacity-10">
+                    <Users className="h-40 w-40" />
+                </div>
             </div>
-            <Card className="p-8 md:p-12 text-center border-2 border-dashed border-gray-200 rounded-3xl">
-                <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <AlertCircle className="h-8 w-8" />
+            <Card className="p-20 text-center border-0 shadow-sm rounded-[40px] bg-white">
+                <div className="h-20 w-20 bg-slate-50 text-slate-400 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <AlertCircle className="h-10 w-10" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Aucun enfant trouvé</h3>
-                <p className="text-gray-500 max-w-sm mx-auto text-sm">Une fois que l'école aura effectué la liaison, vous pourrez suivre les notes, les absences et l'emploi du temps ici.</p>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">Dossier en attente</h3>
+                <p className="text-slate-400 max-w-sm mx-auto font-medium">Une fois la liaison effectuée, vous pourrez piloter la scolarité de vos enfants ici.</p>
             </Card>
         </div>
     )
   }
 
+  const student = data[0]
+  const average = student.grades && student.grades.length > 0
+    ? (student.grades.reduce((acc: any, g: any) => acc + g.value, 0) / student.grades.length).toFixed(2)
+    : "N/A"
+
+  const lastFee = student.parent?.fees?.[0]
+
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* Overview Banner */}
-      <div className="bg-blue-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row justify-between items-center overflow-hidden relative shadow-xl">
+    <div className="space-y-10 animate-in fade-in duration-700 pb-20">
+      {/* Premium Parent Banner */}
+      <div className="bg-slate-900 rounded-[40px] p-10 text-white flex flex-col md:flex-row justify-between items-center overflow-hidden relative shadow-2xl">
         <div className="relative z-10 text-center md:text-left">
-          <h2 className="text-xl md:text-2xl font-bold mb-2">Bonjour {student?.parent?.name || "Parent"} !</h2>
-          <p className="text-blue-100 max-w-md text-sm">Tout va bien pour {student?.name || "votre enfant"} cette semaine. {student?.attendance?.length || 0} jours de présence enregistrés.</p>
+          <h2 className="text-4xl font-black mb-3 tracking-tighter">Bonjour, {student?.parent?.name?.split(' ')[0] || "Parent"} !</h2>
+          <p className="text-slate-400 font-bold max-w-lg leading-relaxed">
+            Suivi en temps réel de <span className="text-primary italic">{student?.name}</span>.
+            Dernière présence : <span className="text-white">{student.attendance?.[0] ? new Date(student.attendance[0].date).toLocaleDateString() : 'Non enregistrée'}</span>.
+          </p>
         </div>
-        <Users className="h-24 w-24 md:h-32 md:w-32 text-white/10 absolute -right-4 -bottom-4 rotate-12 pointer-events-none" />
+        <div className="absolute right-0 top-0 p-10 opacity-10">
+            <Users className="h-40 w-40" />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-         <div className="lg:col-span-2 space-y-6 md:space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-               <Card className="p-6 shadow-sm border-gray-100">
-                  <div className="flex justify-between items-start mb-6">
-                     <div className="bg-green-50 text-green-600 p-2 rounded-lg">
-                        <CheckCircle2 className="h-6 w-6" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+         <div className="lg:col-span-2 space-y-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+               <Card className="p-8 border-0 shadow-sm rounded-[32px] bg-white group hover:shadow-xl transition-all">
+                  <div className="flex justify-between items-start mb-8">
+                     <div className="bg-emerald-50 text-emerald-600 p-4 rounded-2xl">
+                        <Wallet className="h-6 w-6" />
                      </div>
-                     <span className="text-[10px] font-black text-green-600 uppercase bg-green-100 px-2 py-1 rounded">
-                        {student?.parent?.fees?.[0]?.status === 'PAID' ? 'À jour' : 'En attente'}
+                     <span className={cn(
+                        "text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border",
+                        lastFee?.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                     )}>
+                        {lastFee?.status === 'PAID' ? 'RÉGLÉ' : 'À PAYER'}
                      </span>
                   </div>
-                  <h4 className="font-bold text-gray-900">Paiement Scolarité</h4>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {student?.parent?.fees?.[0]?.month || 'N/A'}
-                  </p>
-                  <p className="text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-wider">
-                    {student?.parent?.fees?.[0]?.status === 'PAID'
-                        ? `Payé le ${new Date(student?.parent?.fees?.[0]?.paidAt).toLocaleDateString()}`
-                        : 'Non encore réglé'
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dernier Frais</p>
+                  <h4 className="text-2xl font-black text-slate-900 tracking-tight">{lastFee?.month || 'Scolarité'}</h4>
+                  <p className="text-xs font-bold text-slate-500 mt-2">
+                    {lastFee?.status === 'PAID'
+                        ? `Transaction validée le ${new Date(lastFee.paidAt).toLocaleDateString()}`
+                        : `Montant dû : ${lastFee?.amount || '0'} DH`
                     }
                   </p>
                </Card>
-               <Card className="p-6 shadow-sm border-gray-100">
-                  <div className="flex justify-between items-start mb-6">
-                     <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
+
+               <Card className="p-8 border-0 shadow-sm rounded-[32px] bg-white group hover:shadow-xl transition-all">
+                  <div className="flex justify-between items-start mb-8">
+                     <div className="bg-blue-50 text-blue-600 p-4 rounded-2xl">
                         <BarChart3 className="h-6 w-6" />
                      </div>
-                     <span className="text-[10px] font-black text-blue-600 uppercase bg-blue-100 px-2 py-1 rounded">Trimestre 2</span>
+                     <div className="flex items-center gap-1 text-blue-600 text-[10px] font-black bg-blue-50 px-2 py-1 rounded-full uppercase">
+                        <TrendingUp className="h-3 w-3" /> STABLE
+                     </div>
                   </div>
-                  <h4 className="font-bold text-gray-900">Moyenne Générale</h4>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">17.45 / 20</p>
-                  <p className="text-xs text-gray-500 mt-1 font-medium">2ème sur 28 élèves</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Moyenne Générale</p>
+                  <h4 className="text-3xl font-black text-slate-900 tracking-tighter">{average} <span className="text-sm font-bold text-slate-300 tracking-normal">/ 20</span></h4>
+                  <p className="text-xs font-bold text-slate-500 mt-2">Basé sur {student.grades?.length || 0} évaluations</p>
                </Card>
             </div>
 
             {/* Recent Grades */}
-            <Card className="p-6 shadow-sm border-gray-100">
-               <h3 className="font-bold text-gray-900 text-lg mb-6">Derniers Résultats</h3>
-               <div className="space-y-4">
-                  {student?.grades?.length > 0 ? student.grades.map((item: any, i: number) => (
-                     <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-gray-50 hover:bg-slate-50 transition-all hover:shadow-sm">
-                        <div className="min-w-0">
-                           <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{item.subject}</p>
-                           <p className="text-sm font-bold text-gray-900 truncate">Note d'évaluation</p>
-                           <p className="text-[10px] text-gray-500">{new Date(item.date).toLocaleDateString()}</p>
+            <Card className="p-10 border-0 shadow-sm rounded-[40px] bg-white">
+               <div className="flex justify-between items-center mb-10">
+                  <h3 className="font-black text-slate-900 text-xl tracking-tight uppercase">Derniers Résultats</h3>
+                  <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Dossier Complet</button>
+               </div>
+               <div className="space-y-6">
+                  {student?.grades?.length > 0 ? student.grades.slice(0, 4).map((item: any, i: number) => (
+                     <div key={i} className="flex items-center justify-between p-6 rounded-3xl border border-slate-50 hover:bg-slate-50/50 transition-all hover:border-primary/20 group cursor-pointer">
+                        <div className="flex items-center gap-5">
+                           <div className="h-12 w-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-xs italic group-hover:bg-primary transition-colors shadow-lg shadow-slate-900/10">
+                              {item.subject.charAt(0)}
+                           </div>
+                           <div className="min-w-0">
+                              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">{item.subject}</p>
+                              <p className="text-sm font-black text-slate-900 truncate">Évaluation continue</p>
+                              <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">{new Date(item.date).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long'})}</p>
+                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                           <p className="text-lg font-black text-gray-900">{item.value}/20</p>
-                           <p className="text-[10px] font-bold text-green-600 italic">{item.observation}</p>
+                           <p className="text-2xl font-black text-slate-900 tracking-tight">{item.value}<span className="text-[10px] text-slate-300 font-bold ml-1">/20</span></p>
+                           <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tight mt-1 bg-emerald-50 px-2 py-0.5 rounded-lg">{item.observation || "Bravos !"}</p>
                         </div>
                      </div>
                   )) : (
-                     <p className="text-sm text-gray-500 italic text-center py-4">Aucune note enregistrée pour le moment.</p>
+                     <div className="py-12 text-center text-slate-300">
+                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                        <p className="text-xs font-black uppercase tracking-widest">Aucune note synchronisée</p>
+                     </div>
                   )}
                </div>
             </Card>
          </div>
 
-         <div className="space-y-6 md:space-y-8">
-            <Card className="p-6 shadow-sm border-gray-100">
-               <h3 className="font-bold text-gray-900 text-lg mb-6">Notifications</h3>
-               <div className="space-y-4">
+         <div className="space-y-10">
+            <Card className="p-8 border-0 shadow-sm rounded-[32px] bg-white">
+               <div className="flex justify-between items-center mb-8">
+                  <h3 className="font-black text-slate-900 text-sm uppercase tracking-widest">Flux Direct</h3>
+                  <div className="h-2 w-2 bg-red-500 rounded-full animate-ping" />
+               </div>
+               <div className="space-y-6">
                   {notifications.map((notif, i) => (
-                     <div key={i} className={`p-4 rounded-xl flex gap-3 ${
-                        notif.type === "ERROR" ? "bg-red-50 text-red-700 border border-red-100" : "bg-gray-50 text-gray-700 border border-gray-100"
-                     }`}>
-                        <Bell className="h-5 w-5 shrink-0" />
-                        <div>
-                            <p className="text-xs font-bold leading-none mb-1">{notif.title}</p>
-                            <p className="text-[11px] font-medium leading-relaxed">{notif.message}</p>
+                     <div key={i} className="flex gap-4 group cursor-pointer">
+                        <div className={cn(
+                            "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                            notif.type === "WARNING" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600"
+                        )}>
+                            <Bell className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-xs font-black text-slate-900 group-hover:text-primary transition-colors truncate">{notif.title}</p>
+                            <p className="text-[10px] font-bold text-slate-400 leading-tight mt-0.5 line-clamp-2">{notif.message}</p>
                         </div>
                      </div>
                   ))}
                   {notifications.length === 0 && (
-                    <p className="text-center text-gray-400 text-xs italic py-4">Aucune nouvelle notification.</p>
+                    <p className="text-center text-slate-300 text-[10px] font-black uppercase tracking-widest py-10 italic">Canal vide</p>
                   )}
                </div>
             </Card>
 
-            <Card className="p-6 bg-gradient-to-br from-blue-700 to-indigo-900 text-white border-0 shadow-2xl relative overflow-hidden group">
+            <Card className="p-10 bg-primary text-white border-0 shadow-2xl rounded-[40px] relative overflow-hidden group">
                <div className="relative z-10">
-                  <h4 className="font-black text-lg mb-4 tracking-tight">Menu de la Cantine</h4>
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 mb-6 border border-white/20 shadow-inner">
+                  <div className="flex items-center gap-3 mb-8">
+                     <ChefHat className="h-8 w-8 text-blue-100" />
+                     <h4 className="font-black text-xl tracking-tight uppercase italic">Menu Cantine</h4>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-xl rounded-[32px] p-8 mb-10 border border-white/20 shadow-inner">
                         {canteen ? (
-                            <>
-                                <p className="text-[10px] font-black uppercase text-blue-200 mb-1 tracking-widest">Plat du jour</p>
-                                <p className="text-base font-bold mb-3">{canteen.dish}</p>
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-blue-200 mb-2 tracking-[0.2em]">Principal</p>
+                                    <p className="text-xl font-black leading-tight">{canteen.dish}</p>
+                                </div>
                                 {canteen.dessert && (
-                                    <>
-                                        <div className="h-px bg-white/10 my-3" />
-                                        <p className="text-[10px] font-black uppercase text-blue-200 mb-1 tracking-widest">Dessert</p>
-                                        <p className="text-base font-bold">{canteen.dessert}</p>
-                                    </>
+                                    <div>
+                                        <div className="h-px bg-white/10 w-12 mb-4" />
+                                        <p className="text-[10px] font-black uppercase text-blue-200 mb-2 tracking-[0.2em]">Fin de Repas</p>
+                                        <p className="text-lg font-black leading-tight text-blue-100">{canteen.dessert}</p>
+                                    </div>
                                 )}
-                            </>
+                            </div>
                         ) : (
-                            <p className="text-xs italic text-blue-200">Menu non communiqué pour aujourd'hui.</p>
+                            <div className="py-6 text-center">
+                                <Clock className="h-10 w-10 mx-auto mb-4 opacity-30 animate-pulse" />
+                                <p className="text-xs font-black uppercase tracking-widest text-blue-200">En cours de préparation</p>
+                            </div>
                         )}
                   </div>
-                  <div className="space-y-3">
-                     <Button variant="google" size="sm" className="w-full text-blue-900">Consulter la semaine</Button>
-                     <Button variant="outline" size="sm" className="w-full text-white border-white/30 hover:bg-white/10">Suivi Bus Temps Réel</Button>
-                  </div>
+                  <button className="w-full py-4 bg-white text-primary font-black uppercase text-[10px] tracking-[0.2em] rounded-2xl shadow-xl hover:bg-blue-50 transition-all active:scale-95">
+                     PLANNING SEMAINE
+                  </button>
                </div>
-               <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-white/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
+               <div className="absolute -bottom-10 -right-10 h-60 w-60 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
             </Card>
          </div>
       </div>
     </div>
+  )
+}
+
+// Helper icons for the empty state
+function FileText(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
   )
 }

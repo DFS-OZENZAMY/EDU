@@ -210,3 +210,31 @@ export async function markNotificationsAsRead() {
   })
   revalidatePath("/dashboard")
 }
+
+export async function getParentContacts() {
+  const session = await getSession()
+  if (!session || session.role !== 'PARENT') return []
+
+  const schoolId = session.schoolId!
+
+  // 1. Get School Director (School Admin)
+  const admins = await prisma.user.findMany({
+    where: { schoolId, role: 'SCHOOL_ADMIN' },
+    select: { id: true, name: true, role: true, email: true }
+  })
+
+  // 2. Get Teachers for their children
+  const students = await prisma.student.findMany({
+    where: { parentId: session.userId, schoolId },
+    include: { class: { include: { teacher: true } } }
+  })
+
+  const teachers = students
+    .map(s => s.class?.teacher)
+    .filter((t): t is any => !!t)
+    // De-duplicate teachers
+    .filter((t, index, self) => index === self.findIndex((temp) => temp.id === t.id))
+    .map(t => ({ id: t.id, name: t.name, role: 'TEACHER', email: t.email }))
+
+  return [...admins, ...teachers]
+}

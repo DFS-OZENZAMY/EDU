@@ -1,9 +1,9 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Send, Search, User } from "lucide-react"
+import { Send, Search, User, UserCheck, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getConversations, getAdminUsers } from "@/actions/data"
+import { getConversations, getAdminUsers, getParentContacts } from "@/actions/data"
 import { sendMessage } from "@/actions/teacher"
 import { getSessionUser } from "@/actions/auth"
 
@@ -16,15 +16,26 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
   const [conversations, setConversations] = React.useState<any[]>([])
   const [selectedConv, setSelectedConv] = React.useState<any>(null)
   const [searchTerm, setSearchTerm] = React.useState("")
-  const [allUsers, setAllUsers] = React.useState<any[]>([])
+  const [contacts, setContacts] = React.useState<any[]>([])
   const [currentUser, setCurrentUser] = React.useState<any>(null)
   const [newMessage, setNewMessage] = React.useState("")
   const [mobileShowChat, setMobileShowChat] = React.useState(false)
 
   React.useEffect(() => {
-    getSessionUser().then(setCurrentUser)
-    getAdminUsers().then(setAllUsers)
-    fetchConvs()
+    const init = async () => {
+        const user = await getSessionUser()
+        setCurrentUser(user)
+
+        if (user?.role === 'PARENT') {
+            const res = await getParentContacts()
+            setContacts(res)
+        } else {
+            const res = await getAdminUsers()
+            setContacts(res)
+        }
+        fetchConvs()
+    }
+    init()
   }, [])
 
   const fetchConvs = async () => {
@@ -47,7 +58,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
     fetchConvs()
   }
 
-  const filteredContacts = allUsers.filter(u =>
+  const filteredContacts = contacts.filter(u =>
     u.id !== currentUser?.id &&
     (u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase()))
   )
@@ -86,7 +97,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                  className="p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors"
                >
                   <p className="font-bold text-sm text-gray-900">{u.name}</p>
-                  <p className="text-[10px] text-gray-500 uppercase">{u.role}</p>
+                  <p className="text-[10px] text-gray-500 uppercase">{u.role === 'SCHOOL_ADMIN' ? 'Direction' : 'Professeur'}</p>
                </div>
              ))
            ) : (
@@ -109,7 +120,17 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
               ))
            )}
            {!searchTerm && conversations.length === 0 && (
-            <p className="p-8 text-center text-gray-400 text-xs italic">Utilisez la recherche pour démarrer une conversation.</p>
+            <div className="p-8 text-center space-y-4">
+                 <p className="text-gray-400 text-xs italic">Démarrer une conversation avec la direction ou les professeurs.</p>
+                 <div className="space-y-2">
+                    {contacts.slice(0,3).map(c => (
+                        <button key={c.id} onClick={() => handleSelectConv({user: c, messages: []})} className="w-full text-left p-3 bg-gray-50 rounded-xl text-xs font-bold text-slate-600 hover:bg-gray-100 flex items-center gap-3">
+                            <div className="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px]">{c.name.charAt(0)}</div>
+                            {c.name}
+                        </button>
+                    ))}
+                 </div>
+            </div>
            )}
         </div>
       </Card>
@@ -131,7 +152,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                         </div>
                         <div>
                             <p className="font-bold text-gray-900">{selectedConv.user.name}</p>
-                            <p className="text-xs text-gray-500 capitalize">{selectedConv.user.role.toLowerCase()}</p>
+                            <p className="text-xs text-gray-500 capitalize">{selectedConv.user.role === 'SCHOOL_ADMIN' ? 'Direction' : 'Professeur'}</p>
                         </div>
                     </div>
                 </div>
@@ -152,7 +173,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                         </div>
                     ))}
                     {selectedConv.messages.length === 0 && (
-                        <p className="text-center text-gray-400 text-xs italic mt-10">Aucun message dans cette conversation.</p>
+                        <p className="text-center text-gray-400 text-xs italic mt-10">Posez vos questions ici.</p>
                     )}
                 </div>
 
@@ -161,7 +182,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                       <input
                         type="text"
                         placeholder="Écrivez votre message..."
-                        className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                        className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none text-sm font-medium"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -170,7 +191,7 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                         onClick={handleSend}
                         disabled={!newMessage.trim() || !selectedConv}
                         variant="primary"
-                        className={`${primaryColorClass} hover:opacity-90 h-10 w-10 p-0 rounded-xl`}
+                        className={`${primaryColorClass} hover:opacity-90 h-10 w-10 p-0 rounded-xl shadow-lg shadow-primary/20`}
                       >
                          <Send className="h-4 w-4" />
                       </Button>
@@ -178,11 +199,31 @@ export function MessagingUI({ primaryColorClass, roleLabel }: MessagingUIProps) 
                 </div>
             </>
         ) : (
-            <div className="flex-1 flex items-center justify-center bg-slate-50/30 text-gray-400 italic text-sm p-8 text-center">
-                Sélectionnez une conversation pour commencer
+            <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/30 text-gray-400 p-8 text-center">
+                <MessageSquare className="h-12 w-12 mb-4 opacity-20" />
+                <p className="italic text-sm">Sélectionnez un membre de l'école pour échanger.</p>
             </div>
         )}
       </Card>
     </div>
+  )
+}
+
+function MessageSquare(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
   )
 }

@@ -25,7 +25,7 @@ const sidebarNavigation = [
   { name: "Cahier de Texte", href: "/dashboard/teacher/cahier-texte", icon: BookOpen },
   { name: "Mon Emploi du temps", href: "/dashboard/teacher/calendar", icon: Calendar },
   { name: "Messages Parents", href: "/dashboard/teacher/messages", icon: MessageSquare },
-  { name: "Mon Profil", href: "/dashboard/profile", icon: LayoutDashboard },
+  { name: "Mon Profil", href: "/dashboard/teacher/profile", icon: LayoutDashboard },
 ]
 
 export default function TeacherLayout({
