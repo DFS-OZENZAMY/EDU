@@ -18,10 +18,11 @@ export default function CahierTextePage() {
 
   const fetchData = async () => {
     const data: any = await getMyData()
-    if (Array.isArray(data)) {
-        setClasses(data)
+    if (data && data.classes && Array.isArray(data.classes)) {
+        const teacherClasses = data.classes
+        setClasses(teacherClasses)
         // Flatten logs from all classes for display
-        const allLogs = data.flatMap((c: any) => c.lessonLogs || []).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        const allLogs = teacherClasses.flatMap((c: any) => c.lessonLogs || []).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         setLogs(allLogs)
     }
   }

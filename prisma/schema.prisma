@@ -3,9 +3,205 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+model School {
+  id              Int              @id @default(autoincrement())
+  name            String
+  domain          String?          @unique
+  address         String?
+  city            String?
+  logo            String?
+  plan            SubscriptionTier @default(FREE)
+  ownerName       String?
+  ownerEmail      String?
+  ownerPhone      String?
+  enabledModules  Json?            @default("{}")
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions Json?            @default("{}")
+  canteenMenus    CanteenMenu[]
+  classes         Class[]
+  students        Student[]
+  subscriptions   Subscription[]
+  users           User[]
+}
+
+model Subscription {
+  id        Int              @id @default(autoincrement())
+  schoolId  Int
+  stripeId  String?          @unique
+  status    String
+  tier      SubscriptionTier
+  amount    Float?
+  startDate DateTime         @default(now())
+  endDate   DateTime?
+  school    School           @relation(fields: [schoolId], references: [id])
+}
+
+model User {
+  id               Int              @id @default(autoincrement())
+  email            String           @unique
+  password         String
+  name             String
+  role             Role             @default(STUDENT)
+  phone            String?
+  cin              String?
+  isActive         Boolean          @default(true)
+  schoolId         Int?
+  createdAt        DateTime         @default(now())
+  teacherClasses   Class[]          @relation("TeacherToClass")
+  clockIns         ClockIn[]
+  employeeProfile  EmployeeProfile?
+  fees             Fee[]
+  lessonLogs       LessonLog[]
+  messagesReceived Message[]        @relation("ReceivedMessages")
+  messagesSent     Message[]        @relation("SentMessages")
+  notifications    Notification[]
+  salaryPayments   SalaryPayment[]
+  parentStudents   Student[]        @relation("ParentToStudent")
+  school           School?          @relation(fields: [schoolId], references: [id])
+}
+
+model EmployeeProfile {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  baseSalary   Float    @default(0)
+  contractType String   @default("CDI")
+  rib          String?
+  cnssNumber   String?
+  hiringDate   DateTime @default(now())
+  position     String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SalaryPayment {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  amount Float
+  bonus  Float    @default(0)
+  month  String
+  status String   @default("PAID")
+  paidAt DateTime @default(now())
+  user   User     @relation(fields: [userId], references: [id])
+}
+
+model ClockIn {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  time   DateTime @default(now())
+  user   User     @relation(fields: [userId], references: [id])
+}
+
+model Fee {
+  id          Int       @id @default(autoincrement())
+  parentId    Int
+  month       String
+  amount      Float
+  status      String    @default("PENDING")
+  paidAt      DateTime?
+  invoiceUrl  String?
+  createdAt   DateTime  @default(now())
+  paymentMode String?
+  studentId   Int?
+  parent      User      @relation(fields: [parentId], references: [id])
+  student     Student?  @relation(fields: [studentId], references: [id])
+}
+
+model Student {
+  id         Int          @id @default(autoincrement())
+  name       String
+  birthday   DateTime?
+  schoolId   Int
+  classId    Int?
+  parentId   Int?
+  attendance Attendance[]
+  fees       Fee[]
+  grades     Grade[]
+  class      Class?       @relation(fields: [classId], references: [id])
+  parent     User?        @relation("ParentToStudent", fields: [parentId], references: [id])
+  school     School       @relation(fields: [schoolId], references: [id])
+}
+
+model Class {
+  id         Int         @id @default(autoincrement())
+  name       String
+  level      String
+  room       String?
+  schoolId   Int
+  teacherId  Int?
+  school     School      @relation(fields: [schoolId], references: [id])
+  teacher    User?       @relation("TeacherToClass", fields: [teacherId], references: [id])
+  lessonLogs LessonLog[]
+  students   Student[]
+}
+
+model Grade {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  subject     String
+  value       Float
+  observation String?
+  date        DateTime @default(now())
+  student     Student  @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  status    String
+  date      DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+model LessonLog {
+  id        Int      @id @default(autoincrement())
+  classId   Int
+  teacherId Int
+  subject   String
+  content   String
+  homework  String?
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id])
+  teacher   User     @relation(fields: [teacherId], references: [id])
+}
+
+model CanteenMenu {
+  id        Int      @id @default(autoincrement())
+  schoolId  Int
+  date      DateTime
+  dish      String
+  dessert   String?
+  createdAt DateTime @default(now())
+  school    School   @relation(fields: [schoolId], references: [id])
+
+  @@unique([schoolId, date])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  content    String
+  senderId   Int
+  receiverId Int
+  createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {
@@ -23,216 +219,4 @@ enum SubscriptionTier {
   STANDARD
   PREMIUM
   ENTERPRISE
-}
-
-model School {
-  id            Int               @id @default(autoincrement())
-  name          String
-  domain        String?           @unique
-  address       String?
-  city          String?
-  logo          String?
-  plan          SubscriptionTier  @default(FREE)
-
-  // SaaS Owner tracking
-  ownerName     String?
-  ownerEmail    String?
-  ownerPhone    String?
-
-  // Modular features
-  enabledModules Json?             @default("{}")
-  rolePermissions Json?            @default("{}")
-
-  isActive      Boolean           @default(true)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-
-  // Multi-tenancy relations
-  users         User[]
-  classes       Class[]
-  students      Student[]
-  canteenMenus  CanteenMenu[]
-  subscriptions Subscription[]
-}
-
-model Subscription {
-  id          Int      @id @default(autoincrement())
-  schoolId    Int
-  school      School   @relation(fields: [schoolId], references: [id])
-  stripeId    String?  @unique
-  status      String
-  tier        SubscriptionTier
-  amount      Float?
-  startDate   DateTime @default(now())
-  endDate     DateTime?
-}
-
-model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  password    String
-  name        String
-  role        Role     @default(STUDENT)
-
-  // Advanced Profile
-  phone       String?
-  cin         String?
-  isActive    Boolean   @default(true)
-
-  schoolId    Int?
-  school      School?  @relation(fields: [schoolId], references: [id])
-  createdAt   DateTime @default(now())
-
-  // HR Extension
-  employeeProfile EmployeeProfile?
-
-  // Specific relations
-  teacherClasses Class[]  @relation("TeacherToClass")
-  parentStudents Student[] @relation("ParentToStudent")
-  messagesSent   Message[] @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
-  clockIns       ClockIn[]
-  fees           Fee[]
-  salaryPayments SalaryPayment[]
-  lessonLogs     LessonLog[]
-  notifications  Notification[]
-}
-
-model EmployeeProfile {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  baseSalary    Float    @default(0)
-  contractType  String   @default("CDI") // "CDI", "CDD", "ANAPEC"
-  rib           String?
-  cnssNumber    String?
-  hiringDate    DateTime @default(now())
-  position      String?
-}
-
-model SalaryPayment {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  user          User     @relation(fields: [userId], references: [id])
-  amount        Float
-  bonus         Float    @default(0)
-  month         String
-  status        String   @default("PAID") // "PAID", "PENDING"
-  paidAt        DateTime @default(now())
-}
-
-model ClockIn {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  time      DateTime @default(now())
-}
-
-model Fee {
-  id          Int      @id @default(autoincrement())
-  parentId    Int
-  parent      User     @relation(fields: [parentId], references: [id])
-  studentId   Int?     // Link to specific child if needed
-  student     Student? @relation(fields: [studentId], references: [id])
-  month       String
-  amount      Float
-  status      String   @default("PENDING") // "PAID", "PENDING"
-  paidAt      DateTime?
-  paymentMode String?  // "VIREMENT", "ESPÈCES", "CHÈQUE"
-  invoiceUrl  String?
-  createdAt   DateTime @default(now())
-}
-
-model Student {
-  id        Int      @id @default(autoincrement())
-  name      String
-  birthday  DateTime?
-
-  schoolId  Int
-  school    School   @relation(fields: [schoolId], references: [id])
-  classId   Int?
-  class     Class?   @relation(fields: [classId], references: [id])
-  parentId  Int?
-  parent    User?    @relation("ParentToStudent", fields: [parentId], references: [id])
-
-  grades    Grade[]
-  attendance Attendance[]
-  fees      Fee[]
-}
-
-model Class {
-  id        Int      @id @default(autoincrement())
-  name      String
-  level     String
-  room      String?
-  schoolId  Int
-  school    School   @relation(fields: [schoolId], references: [id])
-  teacherId Int?
-  teacher   User?    @relation("TeacherToClass", fields: [teacherId], references: [id])
-  students  Student[]
-  lessonLogs LessonLog[]
-}
-
-model Grade {
-  id        Int      @id @default(autoincrement())
-  studentId Int
-  student   Student  @relation(fields: [studentId], references: [id])
-  subject   String
-  value     Float
-  observation String?
-  date      DateTime @default(now())
-}
-
-model Attendance {
-  id        Int      @id @default(autoincrement())
-  studentId Int
-  student   Student  @relation(fields: [studentId], references: [id])
-  status    String
-  date      DateTime @default(now())
-}
-
-model LessonLog {
-  id          Int      @id @default(autoincrement())
-  classId     Int
-  class       Class    @relation(fields: [classId], references: [id])
-  teacherId   Int
-  teacher     User     @relation(fields: [teacherId], references: [id])
-  subject     String
-  content     String
-  homework    String?
-  date        DateTime @default(now())
-  createdAt   DateTime @default(now())
-}
-
-model CanteenMenu {
-  id        Int      @id @default(autoincrement())
-  schoolId  Int
-  school    School   @relation(fields: [schoolId], references: [id])
-  date      DateTime
-  dish      String
-  dessert   String?
-  createdAt DateTime @default(now())
-
-  @@unique([schoolId, date])
-}
-
-model Message {
-  id        Int      @id @default(autoincrement())
-  content   String
-  senderId  Int
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
-  receiverId Int
-  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  title     String
-  message   String
-  type      String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
 }

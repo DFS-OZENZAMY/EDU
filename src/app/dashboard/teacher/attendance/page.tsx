@@ -13,11 +13,12 @@ export default function TeacherAttendancePage() {
 
   React.useEffect(() => {
     getMyData().then((data: any) => {
-      if (Array.isArray(data)) {
-        setClasses(data)
-        if (data.length > 0) {
-          setCurrentClassId(data[0].id)
-          setStudents(data[0].students.map((s: any) => ({
+      if (data && data.classes && Array.isArray(data.classes)) {
+        const teacherClasses = data.classes
+        setClasses(teacherClasses)
+        if (teacherClasses.length > 0) {
+          setCurrentClassId(teacherClasses[0].id)
+          setStudents(teacherClasses[0].students.map((s: any) => ({
              ...s,
              attendanceStatus: s.attendance?.[0]?.status
           })))

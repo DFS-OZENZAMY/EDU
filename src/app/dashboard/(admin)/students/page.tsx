@@ -72,7 +72,24 @@ export default function StudentsPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <button className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2">
+            <button
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2"
+                onClick={() => {
+                    const header = "Nom,Classe,Parent,Contact\n";
+                    const rows = filteredStudents.map(s =>
+                        `"${s.name}","${s.class?.name || 'N/A'}","${s.parent?.name || 'N/A'}","${s.parent?.phone || 'N/A'}"`
+                    ).join("\n");
+                    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", "eleves_export.csv");
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }}
+            >
                 <Download className="h-4 w-4" /> EXPORTER CSV
             </button>
         </div>

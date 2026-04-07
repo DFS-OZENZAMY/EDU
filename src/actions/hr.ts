@@ -93,3 +93,40 @@ export async function paySalary(employeeId: number, amount: number, bonus: numbe
     revalidatePath("/dashboard/finance")
     return { success: true }
 }
+
+export async function updateEmployee(id: number, formData: FormData) {
+    const session = await verifySchoolAdmin()
+
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+    const phone = formData.get("phone") as string
+    const role = formData.get("role") as Role
+    const cin = formData.get("cin") as string
+
+    const baseSalary = parseFloat(formData.get("baseSalary") as string) || 0
+    const contractType = formData.get("contractType") as string
+    const cnss = formData.get("cnss") as string
+    const rib = formData.get("rib") as string
+
+    await prisma.user.update({
+        where: { id, schoolId: session.schoolId! },
+        data: {
+            name,
+            email,
+            phone,
+            cin,
+            role,
+            employeeProfile: {
+                update: {
+                    baseSalary,
+                    contractType,
+                    cnssNumber: cnss,
+                    rib
+                }
+            }
+        }
+    })
+
+    revalidatePath("/dashboard/hr")
+    return { success: true }
+}
