@@ -8,6 +8,9 @@ import { encrypt } from "@/lib/auth"
 import { Role, SubscriptionTier } from "@prisma/client"
 
 export async function login(formData: FormData) {
+  if (!process.env.DATABASE_URL) {
+    return { error: "Configuration Error: DATABASE_URL is not set. Please check your environment variables." }
+  }
   try {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -73,6 +76,9 @@ export async function logout() {
 }
 
 export async function register(formData: FormData) {
+  if (!process.env.DATABASE_URL) {
+    return { error: "Configuration Error: DATABASE_URL is not set. Please check your environment variables." }
+  }
   try {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
