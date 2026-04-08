@@ -149,12 +149,9 @@ export async function register(formData: FormData) {
     return { success: true, redirectTo: "/dashboard/overview" }
   } catch (error: any) {
     console.error("REGISTER ACTION ERROR:", error);
-    if (error.message?.includes("DATABASE_URL")) {
-        return { error: "Erreur de configuration : DATABASE_URL non trouvée ou invalide. Vérifiez vos variables d'environnement Vercel." }
-    }
     let msg = "Une erreur est survenue lors de l'inscription";
     if (error.code === 'P2002') msg = "Cet email est déjà utilisé par un autre établissement.";
-    return { error: `${msg} (${error.message || "Détails en console"})` };
+    return { error: msg };
   }
 }
 
