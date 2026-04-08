@@ -7,6 +7,7 @@ import { GraduationCap, Mail, Lock, User, Phone, Building2, ShieldCheck, Loader2
 import { register } from "@/actions/auth"
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -17,10 +18,14 @@ export default function RegisterPage() {
     const formData = new FormData(e.currentTarget)
     try {
       const result = await register(formData)
-      if (result?.error) setError(result.error)
-    } catch (err) {
-      if ((err as any).digest?.startsWith('NEXT_REDIRECT')) throw err;
-      setError("Une erreur est survenue lors de l'inscription")
+      if (result?.error) {
+        setError(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+      }
+    } catch (err: any) {
+      console.error("CLIENT REGISTRATION ERROR:", err)
+      setError(err.message || "Une erreur est survenue lors de l'inscription")
     } finally {
       setIsLoading(false)
     }

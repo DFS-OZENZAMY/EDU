@@ -8,6 +8,7 @@ import { GraduationCap, Mail, Lock, Loader2, ShieldCheck } from "lucide-react"
 import { login } from "@/actions/auth"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [role, setRole] = React.useState<string>("SCHOOL_ADMIN")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -26,9 +27,12 @@ export default function LoginPage() {
 
     try {
       const result = await login(formData)
-      if (result?.error) setError(result.error)
+      if (result?.error) {
+        setError(result.error)
+      } else if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+      }
     } catch (err) {
-      if ((err as any).digest?.startsWith('NEXT_REDIRECT')) throw err;
       setError("Une erreur est survenue")
     } finally {
       setIsLoading(false)
