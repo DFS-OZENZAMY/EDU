@@ -113,18 +113,35 @@ model Fee {
 }
 
 model Student {
-  id         Int          @id @default(autoincrement())
-  name       String
-  birthday   DateTime?
-  schoolId   Int
-  classId    Int?
-  parentId   Int?
-  attendance Attendance[]
-  fees       Fee[]
-  grades     Grade[]
-  class      Class?       @relation(fields: [classId], references: [id])
-  parent     User?        @relation("ParentToStudent", fields: [parentId], references: [id])
-  school     School       @relation(fields: [schoolId], references: [id])
+  id             Int          @id @default(autoincrement())
+  name           String
+  birthday       DateTime?
+  gender         String?      @default("M")
+  nationalId     String?      @unique
+  medicalInfo    String?
+  bloodType      String?
+  emergencyPhone String?
+  schoolId       Int
+  classId        Int?
+  parentId       Int?
+  attendance     Attendance[]
+  fees           Fee[]
+  grades         Grade[]
+  class          Class?       @relation(fields: [classId], references: [id])
+  parent         User?        @relation("ParentToStudent", fields: [parentId], references: [id])
+  school         School       @relation(fields: [schoolId], references: [id])
+  guardians      Guardian[]
+}
+
+model Guardian {
+  id           Int      @id @default(autoincrement())
+  name         String
+  relationship String
+  phone        String
+  email        String?
+  isPrimary    Boolean  @default(false)
+  studentId    Int
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Class {

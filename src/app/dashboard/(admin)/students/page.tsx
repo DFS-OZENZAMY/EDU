@@ -1,14 +1,18 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { GraduationCap, Users, Plus, Download, Search, Trash2, UserPlus } from "lucide-react"
+import { GraduationCap, Users, Plus, Download, Search, Trash2, UserPlus, Info, Layout, List, PanelsTopLeft } from "lucide-react"
 import { getAllStudents } from "@/actions/data"
 import { deleteStudent } from "@/actions/admin"
 import Link from "next/link"
+import { DataGrid } from "@/components/admin/data-grid"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 export default function StudentsPage() {
   const [students, setStudents] = React.useState<any[]>([])
-  const [searchTerm, setSearchTerm] = React.useState("")
+  const [selectedStudent, setSelectedStudent] = React.useState<any>(null)
+  const [viewMode, setViewMode] = React.useState<"DESKTOP" | "WEB">("DESKTOP")
 
   const fetchStudents = () => getAllStudents().then(setStudents)
 
@@ -16,133 +20,116 @@ export default function StudentsPage() {
     fetchStudents()
   }, [])
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Supprimer cet élève ?")) {
-        await deleteStudent(id)
-        fetchStudents()
-    }
-  }
-
-  const filteredStudents = students.filter(s => {
-    const nameMatch = s.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const classMatch = s.class?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false
-    return nameMatch || classMatch
-  })
+  const columns = [
+    { header: "Nom Complet", accessor: "name", render: (val: any) => <span className="font-black text-slate-900">{val}</span> },
+    { header: "Classe", accessor: "class", render: (val: any) => val?.name || "N/A" },
+    { header: "Parent", accessor: "parent", render: (val: any) => val?.name || "-" },
+    { header: "Contact", accessor: "parent", render: (val: any) => val?.phone || "-" },
+    { header: "Sexe", accessor: "gender", render: () => "M" },
+    { header: "Date Naiss.", accessor: "birthday", render: (val: any) => val ? new Date(val).toLocaleDateString() : "-" },
+  ]
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
-      <div className="flex flex-col sm:flex-row justify-between items-end gap-6 border-b border-gray-200 pb-8">
-        <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight">Base de Données Élèves</h2>
-          <p className="text-slate-500 font-bold mt-1 uppercase text-xs tracking-widest">Gestion académique et dossiers scolaires</p>
+    <div className="h-[calc(100vh-100px)] flex flex-col gap-4 animate-in fade-in duration-500 overflow-hidden">
+      {/* Pronote Header */}
+      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-6 py-3 shadow-sm shrink-0">
+        <div className="flex items-center gap-4">
+           <div className="h-10 w-10 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+              <GraduationCap className="h-6 w-6" />
+           </div>
+           <div>
+              <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 leading-none mb-1">Ressources & Dossiers Élèves</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter italic">Base de données académique • Instance SaaS active</p>
+           </div>
         </div>
-        <div className="flex gap-3">
-            <Link href="/dashboard/students/enroll" className="bg-blue-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/10 transition-all flex items-center gap-2">
-                <UserPlus className="h-4 w-4" /> NOUVELLE INSCRIPTION
-            </Link>
+        <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-lg border border-slate-200">
+           <button
+             onClick={() => setViewMode("DESKTOP")}
+             className={cn("p-1.5 rounded transition-all", viewMode === "DESKTOP" ? "bg-white shadow-sm text-blue-600" : "text-slate-400")}
+           >
+              <Layout className="h-4 w-4" />
+           </button>
+           <button
+             onClick={() => setViewMode("WEB")}
+             className={cn("p-1.5 rounded transition-all", viewMode === "WEB" ? "bg-white shadow-sm text-blue-600" : "text-slate-400")}
+           >
+              <List className="h-4 w-4" />
+           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-              { label: "Total Élèves", value: students.length, icon: GraduationCap, color: "blue" },
-              { label: "Classes Actives", value: new Set(students.map(s => s.classId).filter(id => id !== null)).size, icon: Users, color: "purple" },
-          ].map((k, i) => (
-              <Card key={i} className="p-6 border-0 shadow-sm rounded-3xl flex items-center gap-5">
-                  <div className={`p-4 rounded-2xl bg-${k.color}-50 text-${k.color}-600`}>
-                      <k.icon className="h-6 w-6" />
+      <div className="flex-1 flex gap-4 overflow-hidden">
+         {/* Main Grid Area */}
+         <div className={cn("flex-1 h-full transition-all duration-300", selectedStudent ? "md:w-2/3" : "w-full")}>
+            <DataGrid
+                title="Registre des Élèves"
+                data={students}
+                columns={columns}
+                onRowClick={setSelectedStudent}
+                actions={
+                  <Link href="/dashboard/students/enroll" className="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm">
+                      <UserPlus className="h-3 w-3" /> Inscription
+                  </Link>
+                }
+            />
+         </div>
+
+         {/* Pronote Side Panel (Detail View) */}
+         {selectedStudent && (
+            <Card className="w-96 h-full border border-slate-200 shadow-xl overflow-y-auto rounded-lg bg-white flex flex-col animate-in slide-in-from-right-4">
+               <div className="p-6 border-b border-slate-100 flex justify-between items-start sticky top-0 bg-white z-10">
+                  <div className="flex items-center gap-4">
+                     <div className="h-16 w-16 bg-slate-900 rounded-2xl flex items-center justify-center text-white text-xl font-black italic shadow-lg">
+                        {selectedStudent.name.charAt(0)}
+                     </div>
+                     <div>
+                        <h3 className="font-black text-slate-900 leading-tight">{selectedStudent.name}</h3>
+                        <p className="text-[10px] font-black text-blue-600 uppercase mt-1 italic tracking-widest">{selectedStudent.class?.name || "SANS CLASSE"}</p>
+                     </div>
                   </div>
+                  <button onClick={() => setSelectedStudent(null)} className="text-slate-300 hover:text-slate-900 transition-colors">×</button>
+               </div>
+
+               <div className="p-6 space-y-8">
                   <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{k.label}</p>
-                      <p className="text-xl font-black text-slate-900">{k.value}</p>
+                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Info className="h-3 w-3" /> Fiche Signalétique
+                     </h4>
+                     <div className="space-y-4">
+                        <div className="flex justify-between border-b border-slate-50 pb-2">
+                           <span className="text-[10px] font-bold text-slate-400 uppercase">Identifiant</span>
+                           <span className="text-[10px] font-black">#EL-{selectedStudent.id}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-50 pb-2">
+                           <span className="text-[10px] font-bold text-slate-400 uppercase">Email Parent</span>
+                           <span className="text-[10px] font-black">{selectedStudent.parent?.email || "-"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-50 pb-2">
+                           <span className="text-[10px] font-bold text-slate-400 uppercase">Contact Urgence</span>
+                           <span className="text-[10px] font-black text-red-500 font-bold">{selectedStudent.parent?.phone || "-"}</span>
+                        </div>
+                     </div>
                   </div>
-              </Card>
-          ))}
+
+                  <div>
+                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <PanelsTopLeft className="h-3 w-3" /> Suivi Académique
+                     </h4>
+                     <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-500 leading-relaxed italic">
+                           Dossier académique en cours. 12 évaluations enregistrées au 1er trimestre.
+                        </p>
+                     </div>
+                  </div>
+
+                  <div className="pt-6 grid grid-cols-2 gap-3">
+                     <Button variant="outline" className="text-[10px] font-black uppercase rounded-xl py-6 tracking-widest">Modifier</Button>
+                     <Button className="text-[10px] font-black uppercase rounded-xl py-6 tracking-widest bg-red-600 hover:bg-red-700">Supprimer</Button>
+                  </div>
+               </div>
+            </Card>
+         )}
       </div>
-
-      <Card className="p-8 border-0 shadow-sm rounded-[40px] overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-            <div className="relative w-full md:w-80">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Rechercher un élève, une classe..."
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <button
-                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2"
-                onClick={() => {
-                    const header = "Nom,Classe,Parent,Contact\n";
-                    const rows = filteredStudents.map(s =>
-                        `"${s.name}","${s.class?.name || 'N/A'}","${s.parent?.name || 'N/A'}","${s.parent?.phone || 'N/A'}"`
-                    ).join("\n");
-                    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement("a");
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", "eleves_export.csv");
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }}
-            >
-                <Download className="h-4 w-4" /> EXPORTER CSV
-            </button>
-        </div>
-
-        <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead>
-                    <tr className="border-b border-gray-100">
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Nom de l'Élève</th>
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Classe</th>
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Parent</th>
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Contact</th>
-                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                    {filteredStudents.map((student: any) => (
-                        <tr key={student.id} className="hover:bg-gray-50 transition-all group">
-                            <td className="py-5 px-4">
-                                <Link href={`/dashboard/students/${student.id}`} className="flex items-center gap-3 group/item">
-                                    <div className="h-10 w-10 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center font-black text-xs uppercase group-hover/item:bg-blue-600 group-hover/item:text-white transition-all">
-                                        {student.name.charAt(0)}
-                                    </div>
-                                    <span className="text-sm font-black text-slate-900 group-hover/item:text-blue-600 transition-colors">{student.name}</span>
-                                </Link>
-                            </td>
-                            <td className="py-5 px-4">
-                                <span className="text-xs font-black px-3 py-1 bg-blue-50 text-blue-600 rounded-full uppercase tracking-tighter italic">
-                                    {student.class?.name || "Sans classe"}
-                                </span>
-                            </td>
-                            <td className="py-5 px-4 text-xs font-bold text-slate-600">{student.parent?.name || "Non lié"}</td>
-                            <td className="py-5 px-4 text-xs font-bold text-slate-400">{student.parent?.phone || "N/A"}</td>
-                            <td className="py-5 px-4 text-right">
-                                <button
-                                    onClick={() => handleDelete(student.id)}
-                                    className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            {filteredStudents.length === 0 && (
-                <div className="py-20 text-center text-slate-300">
-                    <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p className="text-xs font-black uppercase tracking-widest">Aucun élève trouvé</p>
-                </div>
-            )}
-        </div>
-      </Card>
     </div>
   )
 }

@@ -16,7 +16,9 @@ import {
   BrainCircuit,
   BookOpen,
   Layout,
-  ShieldCheck
+  ShieldCheck,
+  Truck,
+  Zap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
@@ -39,6 +41,10 @@ export default function DashboardLayout({
 
   const sidebarNavigation = [
     { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard, show: true },
+    { name: "Scolarité", href: "/dashboard/academic", icon: BookOpen, show: true },
+    { name: "Vie Scolaire", href: "/dashboard/viescolaire", icon: Zap, show: true },
+    { name: "Emploi du Temps", href: "/dashboard/timetable", icon: Calendar, show: true },
+    { name: "Transport", href: "/dashboard/transport", icon: Truck, show: true },
     { name: "Gestion RH", href: "/dashboard/hr", icon: ShieldCheck, show: enabledModules.HR },
     { name: "Élèves", href: "/dashboard/students", icon: GraduationCap, show: enabledModules.SIS },
     { name: "Classes", href: "/dashboard/classes", icon: Users, show: enabledModules.SIS },
