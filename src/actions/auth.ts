@@ -65,6 +65,7 @@ export async function logout() {
 }
 
 export async function register(formData: FormData) {
+  try {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const name = formData.get("name") as string
@@ -131,6 +132,11 @@ export async function register(formData: FormData) {
     path: '/'
   });
 
+  } catch (error) {
+    if ((error as any).digest?.startsWith('NEXT_REDIRECT')) throw error;
+    console.error("REGISTER ACTION ERROR:", error);
+    return { error: "Une erreur est survenue lors de l'inscription" };
+  }
   redirect("/dashboard/overview")
 }
 

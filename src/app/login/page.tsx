@@ -1,5 +1,6 @@
 "use client"
 import * as React from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,7 @@ export default function LoginPage() {
       const result = await login(formData)
       if (result?.error) setError(result.error)
     } catch (err) {
+      if ((err as any).digest?.startsWith('NEXT_REDIRECT')) throw err;
       setError("Une erreur est survenue")
     } finally {
       setIsLoading(false)
@@ -121,7 +123,7 @@ export default function LoginPage() {
           </Button>
 
           <p className="text-center text-xs text-gray-400 font-medium">
-              Pas encore client ? <button type="button" className="text-primary font-bold hover:underline">Inscrivez votre établissement</button>
+              Pas encore client ? <Link href="/register" className="text-primary font-bold hover:underline">Inscrivez votre établissement</Link>
           </p>
         </form>
       </Card>
