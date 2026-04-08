@@ -19,6 +19,7 @@ export default function RegisterPage() {
       const result = await register(formData)
       if (result?.error) setError(result.error)
     } catch (err) {
+      if ((err as any).digest?.startsWith('NEXT_REDIRECT')) throw err;
       setError("Une erreur est survenue lors de l'inscription")
     } finally {
       setIsLoading(false)
