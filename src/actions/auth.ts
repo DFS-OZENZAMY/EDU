@@ -8,9 +8,6 @@ import { encrypt } from "@/lib/auth"
 import { Role, SubscriptionTier } from "@prisma/client"
 
 export async function login(formData: FormData) {
-  if (!process.env.DATABASE_URL) {
-    return { error: "Configuration Error: DATABASE_URL is not set. Please check your environment variables." }
-  }
   try {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -76,9 +73,6 @@ export async function logout() {
 }
 
 export async function register(formData: FormData) {
-  if (!process.env.DATABASE_URL) {
-    return { error: "Configuration Error: DATABASE_URL is not set. Please check your environment variables." }
-  }
   try {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -155,10 +149,12 @@ export async function register(formData: FormData) {
     return { success: true, redirectTo: "/dashboard/overview" }
   } catch (error: any) {
     console.error("REGISTER ACTION ERROR:", error);
-    // Return specific prisma error message if available
+    if (error.message?.includes("DATABASE_URL")) {
+        return { error: "Erreur de configuration : DATABASE_URL non trouvée ou invalide. Vérifiez vos variables d'environnement Vercel." }
+    }
     let msg = "Une erreur est survenue lors de l'inscription";
     if (error.code === 'P2002') msg = "Cet email est déjà utilisé par un autre établissement.";
-    return { error: `${msg} (${error.message || "Erreur interne"})` };
+    return { error: `${msg} (${error.message || "Détails en console"})` };
   }
 }
 

@@ -13,10 +13,12 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (isLoading) return
     setIsLoading(true)
     setError(null)
     const formData = new FormData(e.currentTarget)
     try {
+      console.log("Submitting registration form...")
       const result = await register(formData)
       if (result?.error) {
         setError(result.error)
