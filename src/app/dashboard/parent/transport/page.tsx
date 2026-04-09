@@ -3,9 +3,21 @@ import * as React from "react"
 import { Card } from "@/components/ui/card"
 import { Truck, MapPin, Clock, Phone, ShieldCheck, AlertCircle, Navigation, ChevronRight, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getMyData } from "@/actions/data"
 
 export default function ParentTransportPage() {
   const [isBusMoving, setIsBusMoving] = React.useState(true)
+  const [student, setStudent] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getMyData().then(res => {
+      if (res?.students?.[0]) {
+        setStudent(res.students[0])
+      }
+    })
+  }, [])
+
+  const route = student?.busRoute
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-20">
@@ -42,10 +54,14 @@ export default function ParentTransportPage() {
                <div className="absolute bottom-10 left-10 right-10">
                   <Card className="p-6 bg-white/90 backdrop-blur-md border-0 shadow-2xl rounded-[32px] flex items-center justify-between">
                      <div className="flex items-center gap-6">
-                        <div className="h-12 w-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black italic">B3</div>
+                        <div className="h-12 w-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black italic">
+                          {route?.busNumber || "---"}
+                        </div>
                         <div>
-                           <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Position Actuelle</p>
-                           <h4 className="text-lg font-black text-slate-900">Boulevard Ghandi, Casablanca</h4>
+                           <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Ligne: {route?.name || "Non assignée"}</p>
+                           <h4 className="text-lg font-black text-slate-900">
+                             {isBusMoving ? "En mouvement..." : "À l'arrêt"}
+                           </h4>
                         </div>
                      </div>
                      <div className="text-right">
@@ -76,18 +92,18 @@ export default function ParentTransportPage() {
                          <User className="h-6 w-6 text-slate-400" />
                       </div>
                       <div>
-                         <p className="text-sm font-black text-slate-900 uppercase">Ahmed Mansouri</p>
-                         <p className="text-[10px] font-bold text-slate-400 uppercase italic">Conducteur Qualifié • 12 ans exp.</p>
+                         <p className="text-sm font-black text-slate-900 uppercase">{route?.driverName || "Non assigné"}</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase italic">Conducteur Ligne {route?.name}</p>
                       </div>
                    </div>
                    <div className="pt-6 border-t border-slate-50 space-y-4">
                       <div className="flex justify-between items-center">
                          <span className="text-[10px] font-black text-slate-400 uppercase">Numéro de ligne</span>
-                         <span className="text-xs font-black">LIGNE 04 (Centre-Ville)</span>
+                         <span className="text-xs font-black">{route?.name || "Non assignée"}</span>
                       </div>
                       <div className="flex justify-between items-center">
                          <span className="text-[10px] font-black text-slate-400 uppercase">Immatriculation</span>
-                         <span className="text-xs font-black">12345 | 1 | 6</span>
+                         <span className="text-xs font-black">{route?.busNumber || "N/A"}</span>
                       </div>
                       <button className="w-full mt-4 flex items-center justify-center gap-2 bg-slate-900 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
                          <Phone className="h-4 w-4" /> APPELER LE CONVOYAGE

@@ -3,31 +3,37 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  BarChart3,
   LogOut,
   Bell,
-  CheckSquare,
-  MessageSquare,
+  BarChart3,
   BookOpen,
-  BrainCircuit
+  BrainCircuit,
+  Calendar,
+  CheckSquare,
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  Wallet,
+  Truck,
+  ChefHat
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { getMyRoleModules } from "@/actions/permissions"
 
-const sidebarNavigation = [
-  { name: "Tableau de bord", href: "/dashboard/teacher", icon: LayoutDashboard },
-  { name: "Mes Classes", href: "/dashboard/teacher/classes", icon: Users },
-  { name: "Saisie de Notes", href: "/dashboard/teacher/grades", icon: BarChart3 },
-  { name: "Appel de Présence", href: "/dashboard/teacher/attendance", icon: CheckSquare },
-  { name: "Cahier de Texte", href: "/dashboard/teacher/cahier-texte", icon: BookOpen },
-  { name: "Assistant IA", href: "/dashboard/teacher/ai-assistant", icon: BrainCircuit },
-  { name: "Mon Emploi du temps", href: "/dashboard/teacher/calendar", icon: Calendar },
-  { name: "Messages Parents", href: "/dashboard/teacher/messages", icon: MessageSquare },
-  { name: "Mon Profil", href: "/dashboard/teacher/profile", icon: LayoutDashboard },
+const fullNavigation = [
+  { name: "Tableau de bord", href: "/dashboard/teacher", icon: LayoutDashboard, key: "DASHBOARD" },
+  { name: "Mes Classes", href: "/dashboard/teacher/classes", icon: Users, key: "SIS" },
+  { name: "Saisie de Notes", href: "/dashboard/teacher/grades", icon: BarChart3, key: "LMS" },
+  { name: "Appel de Présence", href: "/dashboard/teacher/attendance", icon: CheckSquare, key: "LMS" },
+  { name: "Cahier de Texte", href: "/dashboard/teacher/cahier-texte", icon: BookOpen, key: "LMS" },
+  { name: "Assistant IA", href: "/dashboard/teacher/ai-assistant", icon: BrainCircuit, key: "LMS" },
+  { name: "Emploi du temps", href: "/dashboard/teacher/calendar", icon: Calendar, key: "LMS" },
+  { name: "Communication", href: "/dashboard/teacher/messages", icon: MessageSquare, key: "MESSAGING" },
+  { name: "Trésorerie", href: "/dashboard/finance", icon: Wallet, key: "FINANCE" },
+  { name: "Transport", href: "/dashboard/transport", icon: Truck, key: "TRANSPORT" },
+  { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, key: "CANTEEN" },
 ]
 
 export default function TeacherLayout({
@@ -37,10 +43,16 @@ export default function TeacherLayout({
 }) {
   const pathname = usePathname()
   const [user, setUser] = React.useState<any>(null)
+  const [allowedModules, setAllowedModules] = React.useState<string[]>([])
 
   React.useEffect(() => {
     getSessionUser().then(setUser)
+    getMyRoleModules().then(setAllowedModules)
   }, [])
+
+  const sidebarNavigation = fullNavigation.filter(item =>
+    item.key === "DASHBOARD" || allowedModules.includes(item.key)
+  )
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -49,9 +61,9 @@ export default function TeacherLayout({
         <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
           <div className="flex items-center h-16 px-6 border-b border-gray-200">
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-green-600 flex items-center justify-center text-white font-bold text-xl">E</div>
-              <span className="text-xl font-bold text-gray-900">EDU</span>
-              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold">PROF</span>
+              <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xl italic shadow-lg">E</div>
+              <span className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">SaaS <span className="text-blue-600">EDU</span></span>
+              <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-lg font-black uppercase tracking-widest">{user?.role || "STAFF"}</span>
             </Link>
           </div>
           <nav className="flex-1 px-4 py-6 space-y-1">
@@ -62,8 +74,8 @@ export default function TeacherLayout({
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                   pathname === item.href
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-gray-600 hover:bg-green-50 hover:text-green-700"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -88,8 +100,8 @@ export default function TeacherLayout({
         <DashboardHeader
           user={user}
           navigation={sidebarNavigation}
-          roleLabel="PROF"
-          roleColor="bg-green-600"
+          roleLabel={user?.role || "STAFF"}
+          roleColor="bg-slate-900"
         />
 
         {/* Content Area */}

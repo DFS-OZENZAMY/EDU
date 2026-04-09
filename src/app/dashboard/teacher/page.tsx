@@ -1,18 +1,22 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2, Bell } from "lucide-react"
+import { Users, CheckSquare, BarChart3, Clock, Calendar, PlayCircle, CheckCircle2, Bell, Wallet, Truck, ChefHat } from "lucide-react"
 import { getMyData } from "@/actions/data"
 import { clockIn } from "@/actions/teacher"
 import { Button } from "@/components/ui/button"
 
-export default function TeacherDashboardPage() {
+import { getSessionUser } from "@/actions/auth"
+
+export default function EmployeeDashboardPage() {
+  const [user, setUser] = React.useState<any>(null)
   const [hasStartedDay, setHasStartedDay] = React.useState(false)
   const [startTime, setStartTime] = React.useState<string | null>(null)
   const [classes, setClasses] = React.useState<any[]>([])
   const [notifications, setNotifications] = React.useState<any[]>([])
 
   React.useEffect(() => {
+    getSessionUser().then(setUser)
     getMyData().then((res: any) => {
         if (res?.classes) {
             const data = res.classes
@@ -33,6 +37,81 @@ export default function TeacherDashboardPage() {
     await clockIn()
     setHasStartedDay(true)
     setStartTime(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
+  }
+
+  if (user?.role === 'ACCOUNTANT') {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="bg-slate-900 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl">
+          <div className="relative z-10">
+            <h2 className="text-3xl font-black mb-2 tracking-tight">Bonjour, {user.name}</h2>
+            <p className="text-slate-400 font-bold uppercase text-xs tracking-widest italic">Espace Gestion Financière & Trésorerie</p>
+          </div>
+          <Wallet className="absolute -right-12 -top-12 h-64 w-64 text-white/5 -rotate-12 pointer-events-none" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           {/* Generic Stat cards for accountant */}
+           <Card className="p-6">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Recettes (Mois)</p>
+              <h4 className="text-2xl font-black text-slate-900">142,500 DH</h4>
+           </Card>
+           <Card className="p-6 border-l-4 border-l-red-500">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Impayés Critiques</p>
+              <h4 className="text-2xl font-black text-red-600">8,400 DH</h4>
+           </Card>
+           <Card className="p-6">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dépenses Approuvées</p>
+              <h4 className="text-2xl font-black text-slate-900">32,100 DH</h4>
+           </Card>
+           <Card className="p-6 border-l-4 border-l-emerald-500">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Balance Net</p>
+              <h4 className="text-2xl font-black text-emerald-600">+102,000 DH</h4>
+           </Card>
+        </div>
+        {/* Quick access for accountant */}
+        <div className="flex gap-4 overflow-x-auto pb-4">
+           {['Factures Parents', 'Salaires Staff', 'Fournisseurs', 'Rapports'].map((item) => (
+             <Button key={item} variant="secondary" className="whitespace-nowrap rounded-2xl px-8 h-12 font-black uppercase tracking-widest text-[10px]">
+               {item}
+             </Button>
+           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (user?.role === 'STAFF') {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="bg-blue-600 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl">
+          <div className="relative z-10">
+            <h2 className="text-3xl font-black mb-2 tracking-tight italic">ESPACE STAFF - {user.name}</h2>
+            <p className="text-blue-100 font-bold uppercase text-xs tracking-widest">Opérations Scolaires & Logistique</p>
+          </div>
+          <Users className="absolute -right-12 -top-12 h-64 w-64 text-white/5 -rotate-12 pointer-events-none" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+           <Card className="p-8 border-0 shadow-xl rounded-[40px] bg-white group hover:scale-[1.02] transition-transform">
+              <Truck className="h-10 w-10 text-blue-600 mb-4" />
+              <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Transport</h4>
+              <p className="text-xs text-slate-500 font-medium mt-2">12 bus en service • 87% arrivés</p>
+              <Button className="w-full mt-6 rounded-2xl font-black uppercase tracking-widest text-[10px]">Gérer la flotte</Button>
+           </Card>
+           <Card className="p-8 border-0 shadow-xl rounded-[40px] bg-white group hover:scale-[1.02] transition-transform">
+              <ChefHat className="h-10 w-10 text-orange-600 mb-4" />
+              <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Cantine</h4>
+              <p className="text-xs text-slate-500 font-medium mt-2">445 repas servis • Menu du jour: Poulet</p>
+              <Button className="w-full mt-6 rounded-2xl font-black uppercase tracking-widest text-[10px]">Voir menus</Button>
+           </Card>
+           <Card className="p-8 border-0 shadow-xl rounded-[40px] bg-white group hover:scale-[1.02] transition-transform">
+              <Bell className="h-10 w-10 text-red-600 mb-4" />
+              <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Absences</h4>
+              <p className="text-xs text-slate-500 font-medium mt-2">22 nouveaux signalements ce matin</p>
+              <Button className="w-full mt-6 rounded-2xl font-black uppercase tracking-widest text-[10px]">Appeler parents</Button>
+           </Card>
+        </div>
+      </div>
+    )
   }
 
   if (classes.length === 0) {

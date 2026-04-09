@@ -28,9 +28,17 @@ export async function middleware(request: NextRequest) {
          if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/platform-intelligence', request.url));
       }
 
-      // Teacher dashboard restriction
-      if (pathname.startsWith('/dashboard/teacher') && !['TEACHER', 'SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
+      // Teacher dashboard restriction (Also used by generic Employees)
+      if (pathname.startsWith('/dashboard/teacher') && !['TEACHER', 'ACCOUNTANT', 'STAFF', 'SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
         return NextResponse.redirect(new URL('/dashboard/overview', request.url));
+      }
+
+      // Financial and generic modules protection
+      const employeeModules = ['/dashboard/finance', '/dashboard/transport', '/dashboard/canteen'];
+      if (employeeModules.some(path => pathname.startsWith(path))) {
+         if (!['ACCOUNTANT', 'STAFF', 'SCHOOL_ADMIN', 'ADMIN', 'SUPER_ADMIN'].includes(role)) {
+            return NextResponse.redirect(new URL('/dashboard/overview', request.url));
+         }
       }
 
       // Parent dashboard restriction
@@ -51,7 +59,7 @@ export async function middleware(request: NextRequest) {
         const role = payload.role;
         if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/platform-intelligence', request.url));
         if (role === 'SCHOOL_ADMIN' || role === 'ADMIN') return NextResponse.redirect(new URL('/dashboard/overview', request.url));
-        if (role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
+        if (role === 'TEACHER' || role === 'ACCOUNTANT' || role === 'STAFF') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
         if (role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
       } catch (err) {
         // Session invalid

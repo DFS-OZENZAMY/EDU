@@ -10,7 +10,7 @@ export default async function DashboardRootPage() {
   }
 
   if (user.role === Role.SUPER_ADMIN) {
-    redirect("/dashboard/super")
+    redirect("/dashboard/platform-intelligence")
   }
 
   if (user.role === Role.SCHOOL_ADMIN) {

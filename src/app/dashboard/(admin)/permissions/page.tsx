@@ -1,14 +1,15 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { ShieldCheck, Users, Lock, ChevronRight, CheckCircle2, XCircle, Info, Settings2 } from "lucide-react"
+import { ShieldCheck, Lock, CheckCircle2, XCircle, Info, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { getRolePermissions, updateRolePermissions } from "@/actions/permissions"
 
 const roles = [
-  { id: "TEACHER", name: "Enseignants", count: 12, modules: ["SIS", "LMS", "HR", "MESSAGING"] },
-  { id: "ACCOUNTANT", name: "Comptabilité", count: 2, modules: ["FINANCE", "HR", "MESSAGING"] },
-  { id: "STAFF", name: "Personnel Administratif", count: 5, modules: ["SIS", "CANTEEN", "TRANSPORT", "MESSAGING"] },
+  { id: "TEACHER", name: "Enseignants", count: 12 },
+  { id: "ACCOUNTANT", name: "Comptabilité", count: 2 },
+  { id: "STAFF", name: "Personnel Administratif", count: 5 },
 ]
 
 const availableModules = [
@@ -19,10 +20,40 @@ const availableModules = [
   { key: "TRANSPORT", name: "Transport Scolaire", desc: "Lignes et flottes" },
   { key: "CANTEEN", name: "Cantine", desc: "Menus et suivis" },
   { key: "MESSAGING", name: "Communication", desc: "Messagerie interne" },
+  { key: "COMMUNITY", name: "Vie de l'École", desc: "Fil d'actualité et social" },
 ]
 
 export default function PermissionsManagementPage() {
-  const [selectedRole, setSelectedRole] = React.useState(roles[0])
+  const [permissionMatrix, setPermissionMatrix] = React.useState<any>(null)
+  const [selectedRoleId, setSelectedRoleId] = React.useState("TEACHER")
+  const [isSaving, setIsSaving] = React.useState(false)
+
+  React.useEffect(() => {
+    getRolePermissions().then(setPermissionMatrix)
+  }, [])
+
+  if (!permissionMatrix) return <div className="h-full flex items-center justify-center font-black text-slate-400">CHARGEMENT DE LA MATRICE...</div>
+
+  const selectedRole = roles.find(r => r.id === selectedRoleId)!
+  const currentModules = permissionMatrix[selectedRoleId] || []
+
+  const toggleModule = (moduleKey: string) => {
+    const nextModules = currentModules.includes(moduleKey)
+        ? currentModules.filter((k: string) => k !== moduleKey)
+        : [...currentModules, moduleKey]
+
+    setPermissionMatrix({
+        ...permissionMatrix,
+        [selectedRoleId]: nextModules
+    })
+  }
+
+  const handleSave = async () => {
+      setIsSaving(true)
+      await updateRolePermissions(selectedRoleId, currentModules)
+      setIsSaving(false)
+      alert("Matrice de permissions mise à jour avec succès !")
+  }
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-20">
@@ -40,20 +71,19 @@ export default function PermissionsManagementPage() {
             {roles.map((role) => (
                 <button
                     key={role.id}
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => setSelectedRoleId(role.id)}
                     className={cn(
                         "w-full text-left p-6 rounded-[32px] border transition-all relative group overflow-hidden",
-                        selectedRole.id === role.id ? "bg-slate-900 border-slate-900 text-white shadow-2xl" : "bg-white border-slate-100 hover:bg-slate-50 text-slate-900 shadow-sm"
+                        selectedRoleId === role.id ? "bg-slate-900 border-slate-900 text-white shadow-2xl" : "bg-white border-slate-100 hover:bg-slate-50 text-slate-900 shadow-sm"
                     )}
                 >
                     <div className="relative z-10 flex items-center justify-between">
                         <div>
-                            <p className={cn("text-[9px] font-black uppercase tracking-[0.2em] mb-1", selectedRole.id === role.id ? "text-blue-400" : "text-slate-400")}>{role.count} Collaborateur(s)</p>
+                            <p className={cn("text-[9px] font-black uppercase tracking-[0.2em] mb-1", selectedRoleId === role.id ? "text-blue-400" : "text-slate-400")}>{role.count} Collaborateur(s)</p>
                             <h4 className="text-xl font-black italic">{role.name}</h4>
                         </div>
-                        <ShieldCheck className={cn("h-6 w-6", selectedRole.id === role.id ? "text-blue-400" : "text-slate-200")} />
+                        <ShieldCheck className={cn("h-6 w-6", selectedRoleId === role.id ? "text-blue-400" : "text-slate-200")} />
                     </div>
-                    {selectedRole.id === role.id && <div className="absolute top-0 right-0 p-8 opacity-10"><Lock className="h-24 w-24" /></div>}
                 </button>
             ))}
          </div>
@@ -65,17 +95,23 @@ export default function PermissionsManagementPage() {
                     <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Habilitations : {selectedRole.name}</h3>
                     <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Activez ou désactivez l'accès aux briques applicatives</p>
                 </div>
-                <Button className="bg-slate-900 text-white font-black py-4 px-8 rounded-2xl uppercase text-[10px] tracking-widest">Enregistrer la matrice</Button>
+                <Button onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white font-black py-4 px-8 rounded-2xl uppercase text-[10px] tracking-widest">
+                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer la matrice"}
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {availableModules.map((module) => {
-                    const hasAccess = selectedRole.modules.includes(module.key)
+                    const hasAccess = currentModules.includes(module.key)
                     return (
-                        <div key={module.key} className={cn(
-                            "p-6 rounded-[32px] border-2 transition-all flex items-center justify-between group",
-                            hasAccess ? "border-emerald-100 bg-emerald-50/20" : "border-slate-50 bg-slate-50/30 grayscale opacity-60"
-                        )}>
+                        <div
+                            key={module.key}
+                            onClick={() => toggleModule(module.key)}
+                            className={cn(
+                                "p-6 rounded-[32px] border-2 transition-all flex items-center justify-between group cursor-pointer",
+                                hasAccess ? "border-emerald-100 bg-emerald-50/20" : "border-slate-50 bg-slate-50/30 grayscale opacity-60"
+                            )}
+                        >
                             <div className="flex items-center gap-6">
                                 <div className={cn(
                                     "h-12 w-12 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110",
@@ -90,7 +126,7 @@ export default function PermissionsManagementPage() {
                             </div>
                             <div className="flex items-center">
                                 <div className={cn(
-                                    "w-12 h-6 rounded-full relative transition-all cursor-pointer",
+                                    "w-12 h-6 rounded-full relative transition-all",
                                     hasAccess ? "bg-emerald-500" : "bg-slate-300"
                                 )}>
                                     <div className={cn(
@@ -106,11 +142,9 @@ export default function PermissionsManagementPage() {
 
             <div className="mt-12 bg-blue-50 p-6 rounded-[32px] border border-blue-100 flex items-start gap-4">
                 <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                    <p className="text-xs font-bold text-blue-900 leading-relaxed italic">
-                        Les modifications apportées à cette matrice de permissions seront effectives dès la prochaine reconnexion des collaborateurs concernés.
-                    </p>
-                </div>
+                <p className="text-xs font-bold text-blue-900 leading-relaxed italic">
+                    Les modifications apportées à cette matrice de permissions seront effectives dès la prochaine reconnexion des collaborateurs concernés.
+                </p>
             </div>
          </Card>
       </div>

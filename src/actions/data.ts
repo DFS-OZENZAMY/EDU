@@ -117,6 +117,8 @@ export async function getMyData() {
         class: { include: { teacher: true } },
         grades: { orderBy: { date: 'desc' } },
         attendance: true,
+        busRoute: true,
+        achievements: true,
         parent: {
             include: {
                 fees: { orderBy: { id: 'desc' } }

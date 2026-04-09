@@ -131,6 +131,42 @@ model Student {
   parent         User?        @relation("ParentToStudent", fields: [parentId], references: [id])
   school         School       @relation(fields: [schoolId], references: [id])
   guardians      Guardian[]
+  busRouteId     Int?
+  busRoute       BusRoute?    @relation(fields: [busRouteId], references: [id])
+  achievements   Achievement[]
+}
+
+model Achievement {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  title       String
+  icon        String?
+  points      Int      @default(0)
+  date        DateTime @default(now())
+  description String?
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model BusRoute {
+  id          Int       @id @default(autoincrement())
+  schoolId    Int
+  name        String
+  driverName  String?
+  driverPhone String?
+  busNumber   String?
+  capacity    Int       @default(30)
+  school      School    @relation(fields: [schoolId], references: [id])
+  students    Student[]
+  stops       BusStop[]
+}
+
+model BusStop {
+  id       Int      @id @default(autoincrement())
+  routeId  Int
+  name     String
+  time     String?
+  order    Int      @default(0)
+  route    BusRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
 }
 
 model Guardian {

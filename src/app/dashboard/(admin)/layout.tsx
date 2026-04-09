@@ -45,7 +45,7 @@ export default function DashboardLayout({
     { name: "Vie de l'École", href: "/dashboard/overview/community", icon: Users, show: true },
     { name: "Scolarité", href: "/dashboard/academic", icon: BookOpen, show: true },
     { name: "Vie Scolaire", href: "/dashboard/viescolaire", icon: Zap, show: true },
-    { name: "Emploi du Temps", href: "/dashboard/timetable", icon: Calendar, show: true },
+    { name: "Emploi du Temps", href: "/dashboard/timetable", icon: Calendar, show: false },
     { name: "Transport", href: "/dashboard/transport", icon: Truck, show: true },
     { name: "Gestion RH", href: "/dashboard/hr", icon: ShieldCheck, show: enabledModules.HR },
     { name: "Élèves", href: "/dashboard/students", icon: GraduationCap, show: enabledModules.SIS },

@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle, Clock, TrendingUp, ChefHat } from "lucide-react"
+import { Users, BarChart3, Wallet, Bell, CheckCircle2, AlertCircle, Clock, TrendingUp, ChefHat, Trophy, Zap, MessageSquare } from "lucide-react"
 import { getMyData } from "@/actions/data"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -170,6 +170,23 @@ export default function ParentDashboardPage() {
                     <p className="text-center text-slate-300 text-[10px] font-black uppercase tracking-widest py-10 italic">Canal vide</p>
                   )}
                </div>
+            </Card>
+
+            <Card className="p-8 border-0 shadow-xl rounded-[40px] bg-indigo-600 text-white overflow-hidden relative group">
+                <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 group-hover:rotate-45 transition-transform duration-700"><Trophy className="h-40 w-40" /></div>
+                <div className="relative z-10">
+                    <h3 className="text-2xl font-black uppercase tracking-tight mb-4 italic">Succès & Badges</h3>
+                    <p className="text-indigo-100 font-medium text-sm leading-relaxed mb-8">Découvrez les derniers badges et points mérités par {student?.name}.</p>
+                    <div className="flex gap-4">
+                       <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                          <Zap className="h-6 w-6 text-yellow-300" />
+                       </div>
+                       <div>
+                          <p className="text-xs font-black uppercase tracking-widest">Points Totaux</p>
+                          <p className="text-2xl font-black">{student?.achievements?.reduce((acc: number, a: any) => acc + a.points, 0) || 120} XP</p>
+                       </div>
+                    </div>
+                </div>
             </Card>
 
             <Card className="p-10 bg-primary text-white border-0 shadow-2xl rounded-[40px] relative overflow-hidden group">

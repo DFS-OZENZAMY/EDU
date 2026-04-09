@@ -55,7 +55,7 @@ export async function login(formData: FormData) {
     });
 
     let redirectTo = "/dashboard/overview"
-    if (user.role === Role.SUPER_ADMIN) redirectTo = "/dashboard/super"
+    if (user.role === Role.SUPER_ADMIN) redirectTo = "/dashboard/platform-intelligence"
     if (user.role === Role.TEACHER) redirectTo = "/dashboard/teacher"
     if (user.role === Role.PARENT) redirectTo = "/dashboard/parent"
 
