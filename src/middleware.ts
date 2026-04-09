@@ -16,8 +16,8 @@ export async function middleware(request: NextRequest) {
       const payload = await decrypt(session);
       const role = payload.role;
 
-      // Super Admin restriction
-      if (pathname.startsWith('/dashboard/super') && role !== 'SUPER_ADMIN') {
+      // Super Admin restriction (Platform Intelligence)
+      if (pathname.startsWith('/dashboard/platform-intelligence') && role !== 'SUPER_ADMIN') {
         return NextResponse.redirect(new URL('/dashboard/overview', request.url));
       }
 
@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith('/dashboard/overview') && role !== 'SCHOOL_ADMIN' && role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
          if (role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
          if (role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));
-         if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/super', request.url));
+         if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/platform-intelligence', request.url));
       }
 
       // Teacher dashboard restriction
@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
       try {
         const payload = await decrypt(session);
         const role = payload.role;
-        if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/super', request.url));
+        if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/dashboard/platform-intelligence', request.url));
         if (role === 'SCHOOL_ADMIN' || role === 'ADMIN') return NextResponse.redirect(new URL('/dashboard/overview', request.url));
         if (role === 'TEACHER') return NextResponse.redirect(new URL('/dashboard/teacher', request.url));
         if (role === 'PARENT') return NextResponse.redirect(new URL('/dashboard/parent', request.url));

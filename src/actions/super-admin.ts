@@ -92,7 +92,7 @@ export async function updateSchoolPlan(schoolId: number, plan: SubscriptionTier)
     where: { id: schoolId },
     data: { plan }
   })
-  revalidatePath("/dashboard/super/schools")
+  revalidatePath("/dashboard/platform-intelligence/schools")
   return { success: true }
 }
 
@@ -102,7 +102,7 @@ export async function toggleSchoolStatus(schoolId: number, isActive: boolean) {
         where: { id: schoolId },
         data: { isActive }
     })
-    revalidatePath("/dashboard/super/schools")
+    revalidatePath("/dashboard/platform-intelligence/schools")
     return { success: true }
 }
 
@@ -112,6 +112,6 @@ export async function updateSchoolModules(schoolId: number, modules: any) {
         where: { id: schoolId },
         data: { enabledModules: modules }
     })
-    revalidatePath("/dashboard/super/schools")
+    revalidatePath("/dashboard/platform-intelligence/schools")
     return { success: true }
 }

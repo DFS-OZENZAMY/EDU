@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils"
 import { logout } from "@/actions/auth"
 
 const superNavigation = [
-  { name: "SaaS Overview", href: "/dashboard/super", icon: LayoutDashboard },
-  { name: "Financial Intelligence", href: "/dashboard/super/revenue", icon: PiggyBank },
-  { name: "Usage Analytics", href: "/dashboard/super/usage-stats", icon: BarChart3 },
-  { name: "Manage Schools", href: "/dashboard/super/schools", icon: Building2 },
-  { name: "Subscriptions", href: "/dashboard/super/subscriptions", icon: CreditCard },
-  { name: "Platform Config", href: "/dashboard/super/settings", icon: Settings },
+  { name: "SaaS Overview", href: "/dashboard/platform-intelligence", icon: LayoutDashboard },
+  { name: "Financial Intelligence", href: "/dashboard/platform-intelligence/revenue", icon: PiggyBank },
+  { name: "Usage Analytics", href: "/dashboard/platform-intelligence/usage-stats", icon: BarChart3 },
+  { name: "Manage Schools", href: "/dashboard/platform-intelligence/schools", icon: Building2 },
+  { name: "Subscriptions", href: "/dashboard/platform-intelligence/subscriptions", icon: CreditCard },
+  { name: "Platform Config", href: "/dashboard/platform-intelligence/settings", icon: Settings },
 ]
 
 export function SuperAdminLayout({ children }: { children: React.ReactNode }) {
