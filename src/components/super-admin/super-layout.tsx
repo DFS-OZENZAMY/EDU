@@ -4,13 +4,16 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   Menu, X, LogOut, LayoutDashboard, Building2,
-  CreditCard, Settings, Bell, Globe, Search, User
+  CreditCard, Settings, Bell, Globe, Search, User,
+  BarChart3, PiggyBank, Activity
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout } from "@/actions/auth"
 
 const superNavigation = [
   { name: "SaaS Overview", href: "/dashboard/super", icon: LayoutDashboard },
+  { name: "Financial Intelligence", href: "/dashboard/super/revenue", icon: PiggyBank },
+  { name: "Usage Analytics", href: "/dashboard/super/usage-stats", icon: BarChart3 },
   { name: "Manage Schools", href: "/dashboard/super/schools", icon: Building2 },
   { name: "Subscriptions", href: "/dashboard/super/subscriptions", icon: CreditCard },
   { name: "Platform Config", href: "/dashboard/super/settings", icon: Settings },

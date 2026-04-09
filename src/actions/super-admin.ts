@@ -38,6 +38,42 @@ export async function getPlatformStats() {
   }
 }
 
+export async function getPlatformIntelligence() {
+  await verifySuperAdmin()
+
+  // 1. Revenue Trends (Simulation based on subscriptions)
+  const subs = await prisma.subscription.findMany({
+    where: { status: 'ACTIVE' },
+    select: { amount: true, startDate: true }
+  })
+
+  // 2. Module Adoption (Aggregate from School.enabledModules)
+  const schools = await prisma.school.findMany({
+    select: { enabledModules: true }
+  })
+
+  const moduleCounts: Record<string, number> = {}
+  schools.forEach(s => {
+    const modules = s.enabledModules as any
+    if (modules) {
+        Object.keys(modules).forEach(m => {
+            if (modules[m]) moduleCounts[m] = (moduleCounts[m] || 0) + 1
+        })
+    }
+  })
+
+  return {
+    revenue: subs.reduce((acc, s) => acc + (s.amount || 0), 0),
+    activeSubs: subs.length,
+    moduleAdoption: Object.entries(moduleCounts).map(([name, value]) => ({ name, value })),
+    recentPayments: await prisma.subscription.findMany({
+        orderBy: { startDate: 'desc' },
+        take: 10,
+        include: { school: true }
+    })
+  }
+}
+
 export async function getAllSchools() {
   await verifySuperAdmin()
   return await prisma.school.findMany({
