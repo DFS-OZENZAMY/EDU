@@ -18,7 +18,8 @@ import {
   Layout,
   ShieldCheck,
   Truck,
-  Zap
+  Zap,
+  Lock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
@@ -41,6 +42,7 @@ export default function DashboardLayout({
 
   const sidebarNavigation = [
     { name: "Vue d'ensemble", href: "/dashboard/overview", icon: LayoutDashboard, show: true },
+    { name: "Vie de l'École", href: "/dashboard/overview/community", icon: Users, show: true },
     { name: "Scolarité", href: "/dashboard/academic", icon: BookOpen, show: true },
     { name: "Vie Scolaire", href: "/dashboard/viescolaire", icon: Zap, show: true },
     { name: "Emploi du Temps", href: "/dashboard/timetable", icon: Calendar, show: true },
@@ -54,7 +56,7 @@ export default function DashboardLayout({
     { name: "Bibliothèque", href: "/dashboard/library", icon: BookOpen, show: true },
     { name: "Cantine", href: "/dashboard/canteen", icon: ChefHat, show: enabledModules.CANTEEN },
     { name: "Workspace", href: "/dashboard/settings/modules", icon: Layout, show: true },
-    { name: "Mon Profil", href: "/dashboard/admin-profile", icon: Users, show: true },
+    { name: "Habilitations", href: "/dashboard/permissions", icon: Lock, show: true },
     { name: "Paramètres", href: "/dashboard/settings", icon: Settings, show: true },
   ]
 

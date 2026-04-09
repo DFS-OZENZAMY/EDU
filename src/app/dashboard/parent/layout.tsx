@@ -11,7 +11,10 @@ import {
   LogOut,
   Bell,
   MessageSquare,
-  ClipboardCheck
+  ClipboardCheck,
+  Zap,
+  TrendingUp,
+  Truck
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { logout, getSessionUser } from "@/actions/auth"
@@ -19,13 +22,14 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 
 const sidebarNavigation = [
   { name: "Tableau de bord", href: "/dashboard/parent", icon: LayoutDashboard },
-  { name: "Suivi de l'enfant", href: "/dashboard/parent/child", icon: Users },
-  { name: "Résultats Scolaires", href: "/dashboard/parent/grades", icon: BarChart3 },
-  { name: "Présences", href: "/dashboard/parent/attendance", icon: ClipboardCheck },
+  { name: "Performance", href: "/dashboard/parent/performance", icon: TrendingUp },
+  { name: "Vie Scolaire", href: "/dashboard/parent/viescolaire", icon: Zap },
+  { name: "Dossier Élève", href: "/dashboard/parent/child", icon: Users },
+  { name: "Bulletins", href: "/dashboard/parent/grades", icon: BarChart3 },
   { name: "Emploi du temps", href: "/dashboard/parent/calendar", icon: Calendar },
+  { name: "Transport", href: "/dashboard/parent/transport", icon: Truck },
   { name: "Paiements & Frais", href: "/dashboard/parent/finance", icon: Wallet },
   { name: "Message à l'école", href: "/dashboard/parent/messages", icon: MessageSquare },
-  { name: "Mon Profil", href: "/dashboard/parent/profile", icon: LayoutDashboard },
 ]
 
 export default function ParentLayout({
